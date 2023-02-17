@@ -23,8 +23,6 @@ DROP TABLE "SPC_DEFINITION";
                                   , "ITEM_SIZE" NUMBER
                                   , "ITEM_MAX_LENGTH" NUMBER
                                   , "FORMAT_ID" NUMBER
-                                  --, "SPC_CONDITION_PRNT_ID" NUMBER --?
-                                  --, "SPC_CONDITION_DISP_ID" NUMBER
                                   --, "MAX_VALUE" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                   --, "MIN_VALUE" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                   , "CREATED" DATE
@@ -50,8 +48,6 @@ DROP TABLE "SPC_DEFINITION";
    COMMENT ON COLUMN "SPC_DEFINITION"."ITEM_SIZE" IS 'Allows the user to define the size of the item';
    COMMENT ON COLUMN "SPC_DEFINITION"."ITEM_MAX_LENGTH" IS 'Allows the user to define the maximum length of the item';
    COMMENT ON COLUMN "SPC_DEFINITION"."FORMAT_ID" IS 'Allows the user to assign the format of the item';
-   --COMMENT ON COLUMN "SPC_DEFINITION"."SPC_CONDITION_PRNT_ID" IS ''; --?
-   --COMMENT ON COLUMN "SPC_DEFINITION"."SPC_CONDITION_DISP_ID" IS ''; --?
    --COMMENT ON COLUMN "SPC_DEFINITION"."MAX_VALUE" IS ''; --?
    --COMMENT ON COLUMN "SPC_DEFINITION"."MIN_VALUE" IS ''; --?
    COMMENT ON COLUMN "SPC_DEFINITION"."CREATED" IS 'Allows to identify the date the record was created';
@@ -105,6 +101,8 @@ begin
     :new.modified    := sysdate; 
     :new.modified_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
 end SPC_DEFINITION_BIU;
+
+ALTER TRIGGER "SPC_DEFINITION_BIU" ENABLE;
 --------------------------------------------------------
 --  Constraints for Table SPC_DEFINITION
 --------------------------------------------------------
@@ -129,6 +127,4 @@ end SPC_DEFINITION_BIU;
   
   ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK1" FOREIGN KEY ("GROUP_DEF_ID") REFERENCES "SPC_GROUP_DEFINITION" ("ID") ENABLE;
   ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK2" FOREIGN KEY ("FORMAT_ID") REFERENCES "SPC_FORMAT" ("ID") ENABLE;
-  --ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK1" FOREIGN KEY ("SPC_CONDITION_PRNT_ID") REFERENCES "SPC_DEFINITION" ("ID") ENABLE; --?
-  --ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK2" FOREIGN KEY ("SPC_CONDITION_DISP_ID") REFERENCES "SPC_DEFINITION" ("ID") ENABLE; --?
   --ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK3" FOREIGN KEY ("COUNTER_CODE") REFERENCES "SPC_VAL_COUNTER" ("CODE") ENABLE;
