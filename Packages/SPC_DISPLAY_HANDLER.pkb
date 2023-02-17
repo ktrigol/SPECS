@@ -120,8 +120,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
             from ( 
                select t1.id as spc_id  
                     , t1.field_type 
-                    , spc_tools.get_description_lang(t1.id,p_lang) as title 
-                    , spc_tools.get_des_helptext_lang(t1.id,p_lang) as help_text
+                    , spc_tool.get_description_lang(t1.id,p_lang) as title 
+                    , spc_tool.get_des_helptext_lang(t1.id,p_lang) as help_text
                     , t1.mandatory_ind 
                     , t1.read_only_ind
                     , t1.active_ind 
@@ -151,8 +151,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 union 
                select t1.id as spc_id 
                     , t1.field_type 
-                    , spc_tools.get_description_lang(t1.id,p_lang) as title 
-                    , spc_tools.get_des_helptext_lang(t1.id,p_lang) as help_text
+                    , spc_tool.get_description_lang(t1.id,p_lang) as title 
+                    , spc_tool.get_des_helptext_lang(t1.id,p_lang) as help_text
                     , t1.mandatory_ind 
                     , t1.read_only_ind
                     , t1.active_ind 
@@ -310,7 +310,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                       || case when p_item_id is not null then '" id="'|| p_item_id end 
                       || '" data-specID="' || p_spc_id  
                       || case when p_ref_id is not null then '" data-refID="' || p_spc_id end
-                      || '" data-label="' || p_title || '" disabled' 
+                      || '" data-label="' || p_title || '"' 
                       || case when p_read_only_ind = 1 then ' disabled ' end 
                   , p_item_label => p_title  
                 ); 
@@ -319,7 +319,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 l_return := APEX_ITEM.SELECT_LIST_FROM_QUERY( 
                     p_idx => 2 
                   , p_value => p_value 
-                  , p_query => spc_tools.get_spc_query_lov( p_list_group => p_list_group 
+                  , p_query => spc_tool.get_spc_query_lov( p_list_group => p_list_group 
                                                               , p_list_code => p_list_code 
                                                               , p_lang => p_lang 
                                                               )

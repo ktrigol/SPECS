@@ -15,25 +15,12 @@ DROP TABLE "DEMO_STAGIAIRE";
                                 ,"MODIFIE_LE" DATE
                                 ,"MODIFIE_PAR" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                 )  DEFAULT COLLATION "USING_NLS_COMP";
-
-   COMMENT ON COLUMN "DEMO_STAGIAIRE"."APP_ID" IS 'Application ID to relate to the specificity';
-   COMMENT ON COLUMN "DEMO_STAGIAIRE"."PAGE_ID" IS 'Page ID to relate to the specificity';
    
 --------------------------------------------------------
---  DDL for Index ID_SPC_PK
+--  DDL for Index ID_STAGIAIRE_PK
 --------------------------------------------------------
 
-  CREATE UNIQUE INDEX "ID_SPC_PK" ON "DEMO_STAGIAIRE" ("ID");
---------------------------------------------------------
---  DDL for Index DEMO_STAGIAIRE_UK1
---------------------------------------------------------
-
-  --CREATE UNIQUE INDEX "DEMO_STAGIAIRE_UK1" ON "DEMO_STAGIAIRE" ("APP_ID", "PAGE_ID", "SPC_CODE");
---------------------------------------------------------
---  DDL for Index DEMO_STAGIAIRE_IDX1
---------------------------------------------------------
-
-  --CREATE INDEX "DEMO_STAGIAIRE_IDX1" ON "DEMO_STAGIAIRE" ("ID", "APP_ID", "PAGE_ID"/*, "SPC_CODE"*/);
+  CREATE UNIQUE INDEX "ID_STAGIAIRE_PK" ON "DEMO_STAGIAIRE" ("ID");
 --------------------------------------------------------
 --  DDL for Trigger DEMO_STAGIAIRE_BIU
 --------------------------------------------------------
@@ -43,53 +30,28 @@ DROP TABLE "DEMO_STAGIAIRE";
     on DEMO_STAGIAIRE 
     for each row
 begin
-    if inserting and :new.created is null then
-        select nvl(max(d.disp_seq) + 10, 10)
-        into :new.disp_seq
-        from DEMO_STAGIAIRE d
-        where d.app_id = :new.app_id
-        and   d.page_id = :new.page_id
-        and   d.group_def_id = :new.group_def_id;
-
-        :new.spc_code   := 'ITEM_' || :new.id;
-        :new.created    := sysdate; 
-        :new.created_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
+    if inserting and :new.cree_le is null then
+        :new.cree_le    := sysdate; 
+        :new.cree_par   := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
     end if; 
-    if updating and :new.group_def_id != :old.group_def_id then
-        select nvl(max(d.disp_seq) + 10, 10)
-        into :new.disp_seq
-        from DEMO_STAGIAIRE d
-        where d.app_id = :new.app_id
-        and   d.page_id = :new.page_id
-        and   d.group_def_id = :new.group_def_id;
-    end if;
-    :new.modified    := sysdate; 
-    :new.modified_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
+    :new.modifie_le    := sysdate; 
+    :new.modifie_par   := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
 end DEMO_STAGIAIRE_BIU;
+/
+ALTER TRIGGER "DEMO_STAGIAIRE_BIU" ENABLE;
 --------------------------------------------------------
 --  Constraints for Table DEMO_STAGIAIRE
 --------------------------------------------------------
 
-  --ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("ID" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("APP_ID" NOT NULL ENABLE); 
-  --ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("PAGE_ID" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("SPC_CODE" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("DISP_SEQ" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("FIELD_TYPE" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("CREATED" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("CREATED_BY" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("MODIFIED" NOT NULL ENABLE);
-  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("MODIFIED_BY" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("IDENTIFICATION_NO" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("NOM" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("PRENOM" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("DATE_NAISSANCE" NOT NULL ENABLE);
 
-  ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "ID_SPC_PK" PRIMARY KEY ("ID") USING INDEX "ID_SPC_PK"  ENABLE;
-  ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_UK1" UNIQUE ("APP_ID", "PAGE_ID", "SPC_CODE") USING INDEX  ENABLE;
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("CREE_LE" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("CREE_PAR" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("MODIFIE_LE" NOT NULL ENABLE);
+  ALTER TABLE "DEMO_STAGIAIRE" MODIFY ("MODIFIE_PAR" NOT NULL ENABLE);
+
+  ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "ID_STAGIAIRE_PK" PRIMARY KEY ("ID") USING INDEX "ID_STAGIAIRE_PK"  ENABLE;
   
---------------------------------------------------------
---  Ref Constraints for Table DEMO_STAGIAIRE
---------------------------------------------------------
-  
-  ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_FK1" FOREIGN KEY ("GROUP_DEF_ID") REFERENCES "SPC_GROUP_DEFINITION" ("ID") ENABLE;
-  ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_FK2" FOREIGN KEY ("FORMAT_ID") REFERENCES "SPC_FORMAT" ("ID") ENABLE;
-  --ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_FK1" FOREIGN KEY ("SPC_CONDITION_PRNT_ID") REFERENCES "DEMO_STAGIAIRE" ("ID") ENABLE; --?
-  --ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_FK2" FOREIGN KEY ("SPC_CONDITION_DISP_ID") REFERENCES "DEMO_STAGIAIRE" ("ID") ENABLE; --?
-  --ALTER TABLE "DEMO_STAGIAIRE" ADD CONSTRAINT "DEMO_STAGIAIRE_FK3" FOREIGN KEY ("COUNTER_CODE") REFERENCES "SPC_VAL_COUNTER" ("CODE") ENABLE;
