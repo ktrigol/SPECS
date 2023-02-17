@@ -73,6 +73,8 @@ flw_type_lang /auditcols
 flw_type_step /auditcols
     id num /pk -- primary key
     flw_type_id num /fk flw_type(id) /nn -- references the flow type ID in flw_type table
+    --> GROUP DEF - ID : 
+    --> SPEC ID
     display_spc_ids vc4000 -- specificities to display for this step
     note vc4000 -- note for this step
     step_number num -- sequence of current flow
@@ -101,7 +103,7 @@ flw_type_step_option /auditcols
     mandatory_spc_ids vc4000 -- specificities IDS that must have a value for this step';
     readonly_spc_ids vc4000  -- 'specificities IDS in readonly mode for this step';
     display_seq num          -- order used to display the buttons
-    css_button vs500         -- APEX class to use on this button
+    css_button vc500         -- APEX class to use on this button
 
 flw_type_step_option_lang /auditcols -- description for button name
     id num /pk -- primary key

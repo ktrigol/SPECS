@@ -335,6 +335,7 @@ procedure create_flow_step_option (
    p_role_ids                 in flw_type_step_option.role_ids%type,
    p_mandatory_spc_ids        in flw_type_step_option.mandatory_spc_ids%type,
    p_readonly_spc_ids         in flw_type_step_option.readonly_spc_ids%type,
+   p_css_button               in flw_type_step_option.css_button%type,
    p_out_id                   out flw_type_step_option.id%type,
    p_out_status               out varchar2,
    p_out_message              out varchar2
@@ -347,8 +348,8 @@ begin
    where flw_type_step_id = p_flw_type_step_id;
 
    --> insert row
-   insert into flw_type_step_option(flw_type_step_id, next_step_id, role_ids, mandatory_spc_ids, readonly_spc_ids, display_seq)
-   values(p_flw_type_step_id, p_next_step_id, p_role_ids, p_mandatory_spc_ids, p_readonly_spc_ids, l_next_display_seq)
+   insert into flw_type_step_option(flw_type_step_id, next_step_id, role_ids, mandatory_spc_ids, readonly_spc_ids, display_seq, css_button)
+   values(p_flw_type_step_id, p_next_step_id, p_role_ids, p_mandatory_spc_ids, p_readonly_spc_ids, l_next_display_seq, p_css_button)
    returning id into p_out_id;
 
    p_out_status := 'SUCCESS';
@@ -373,7 +374,8 @@ procedure update_flow_step_option (
    p_next_step_id             in flw_type_step_option.next_step_id%type,
    p_role_ids                 in flw_type_step_option.role_ids%type,
    p_mandatory_spc_ids        in flw_type_step_option.mandatory_spc_ids%type, 
-   p_readonly_spc_ids         in flw_type_step_option.readonly_spc_ids%type, 
+   p_readonly_spc_ids         in flw_type_step_option.readonly_spc_ids%type,
+   p_css_button               in flw_type_step_option.css_button%type,
    p_out_status               out varchar2,
    p_out_message              out varchar2
 ) as
@@ -383,7 +385,8 @@ begin
       set next_step_id = p_next_step_id, 
             role_ids = p_role_ids,
             mandatory_spc_ids = p_mandatory_spc_ids, 
-            readonly_spc_ids = p_readonly_spc_ids
+            readonly_spc_ids = p_readonly_spc_ids,
+            css_button = p_css_button
    where id = p_id;
 
    p_out_status := 'SUCCESS';

@@ -188,6 +188,7 @@ create or replace package flw_tool -- authid definer
       @p_role_ids : roles having access to this option or null if no restriction is needed
       @p_mandatory_spc_ids : specificities that need to have a value if this option is selected
       @p_readonly_spc_ids : specificities in readonly mode when this option is selected
+      @p_css_button : css applied on button
       @p_out_id : returns the ID of the row inserted
       @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
       @p_out_message : returns the error details when an error occured, null otherwise
@@ -198,6 +199,7 @@ create or replace package flw_tool -- authid definer
       p_role_ids                 in flw_type_step_option.role_ids%type,
       p_mandatory_spc_ids        in flw_type_step_option.mandatory_spc_ids%type, 
       p_readonly_spc_ids         in flw_type_step_option.readonly_spc_ids%type, 
+      p_css_button               in flw_type_step_option.css_button%type,
       p_out_id                   out flw_type_step_option.id%type,
       p_out_status               out varchar2,
       p_out_message              out varchar2
@@ -209,6 +211,7 @@ create or replace package flw_tool -- authid definer
       @p_role_ids : roles having access to this option or null if no restriction is needed
       @p_mandatory_spc_ids : specificities that need to have a value if this option is selected
       @p_readonly_spc_ids : specificities in readonly mode when this option is selected
+      @p_css_button : css applied on button
       @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
       @p_out_message : returns the error details when an error occured, null otherwise
    */
@@ -218,6 +221,7 @@ create or replace package flw_tool -- authid definer
       p_role_ids                 in flw_type_step_option.role_ids%type,
       p_mandatory_spc_ids        in flw_type_step_option.mandatory_spc_ids%type, 
       p_readonly_spc_ids         in flw_type_step_option.readonly_spc_ids%type, 
+      p_css_button               in flw_type_step_option.css_button%type,
       p_out_status               out varchar2,
       p_out_message              out varchar2
    );
