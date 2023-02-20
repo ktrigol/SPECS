@@ -58,10 +58,22 @@ flw_type /auditcols
     id num /pk -- primary key
     --description vc500 -- flow type description - when only one language is used by application
     --ref_id num /nn -- unique identifier for the entity linked to this flow
-    --trigger_spc_ids vc4000
+    --trigger_spc_ids vc4000 : to be done later on
     priority num /default 1 /nn -- priority between flows
     ind_active num  /nn /check 0,1 -- flag indicating if flow is active or not active
     -- TODO /default 1
+
+
+
+--REF_TYPE_ID num /nn -- spc definition
+/*
+    --TODO : add foregin key spc_definition.ref_id > spc_ref_type.id
+    KAEL
+    spc_ref_type
+        id num /pk -- primary key
+        table_name vc500 /nn
+        /unique table_name
+*/
 
 flw_type_lang /auditcols
     id num /pk -- primary key
@@ -79,6 +91,12 @@ flw_type_step /auditcols
     note vc4000 -- note for this step
     step_number num -- sequence of current flow
     --display_seq num /nn -- display sequence between flows
+
+/*-- association 
+flw_type_step_display_spec
+    id num /pk -- primary key
+    flw_type_step_id num /fk flw_type_step(id) /nn -- references the flow type step ID in flw_type_step table*/
+
 
 flw_type_step_lang /auditcols -- description for button name
     id num /pk -- primary key
@@ -104,6 +122,7 @@ flw_type_step_option /auditcols
     readonly_spc_ids vc4000  -- 'specificities IDS in readonly mode for this step';
     display_seq num          -- order used to display the buttons
     css_button vc500         -- APEX class to use on this button
+    /unique flw_type_step_id, display_seq
 
 flw_type_step_option_lang /auditcols -- description for button name
     id num /pk -- primary key
