@@ -306,12 +306,13 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                   , p_year_range    => '-300:+1' 
                   , p_attributes => 'class="itemSpc date-format' 
                       || case when p_class is not null then ' '||p_class end
-                      || case when p_mandatory_ind = 1 then ' mandatoryItem' else '' end 
-                      || case when p_item_id is not null then '" id="'|| p_item_id end 
-                      || '" data-specID="' || p_spc_id  
-                      || case when p_ref_id is not null then '" data-refID="' || p_spc_id end
+                      || case when p_mandatory_ind = 1 then ' mandatoryItem' else ' ' end 
+                      --|| case when p_item_id is not null then '" id="'|| p_item_id   end 
+                      --|| '" id="apex_date_02_00'--|| p_item_id
+                     || '" data-specID="' || p_spc_id  
+                      || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                       || '" data-label="' || p_title || '"' 
-                      || case when p_read_only_ind = 1 then ' disabled ' end 
+                      || case when p_read_only_ind = 1 then  '" id="'|| p_item_id||'" disabled ' end 
                   , p_item_label => p_title  
                 ); 
  
