@@ -591,41 +591,39 @@ begin
         join flw_action t2
           on t1.flw_action_id = t2.id
           and t2.code_plsql is not null
-          and t1.flw_type_step_id = l_flw_type_step.id
+          and t1.flw_type_step_option_id = l_flw_type_step_option.id
     ) loop
 
         --insum_debug.log_error('c1.code_plsql => ' || c1.code_plsql );
 
-        -- vérifie la cohérence
+        -- check if required parameters are passed
         if c1.nb_params > 1 then
 
-            -- fonction qui affecte ou annule une valeur d'une spécificité
+            -- function that will set a value to specificity
             if c1.type != 'NORMAL' and c1.spc_id is null then
-                raise_application_error(-20001, 'Les paramètres de l''action sont manquants');
+                raise_application_error(-20001, 'Missing action parameters');
 
-            -- procédure générale (envoie de courriel)
+            -- general procedure (send email)
             elsif c1.type = 'NORMAL' and c1.action_parameters is null and c1.user_id is null and c1.role_id is null then
-                raise_application_error(-20001, 'Les paramètres de l''action sont manquants');
+                raise_application_error(-20001, 'Missing action parameters');
             end if;
         end if;
 
-        -- convertie la liste des paramètres en tableau
-        --if c1.action_parameters is not null then
+        -- convert parameter list in array
         if c1.type != 'NORMAL' then
             l_params_array := apex_string.split(p_str => c1.spc_id, p_sep => ':');
         else
 
-            if c1.code_action = 'ENVOIE_SMS' then
+            if c1.code_action = 'SEND_SMS' then
                 l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1), p_sep => ':');
-            elsif c1.code_action = 'ENVOIE_MAIL' then
+            elsif c1.code_action = 'SEND_MAIL' then
                 l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1) || ':' || c1.action_parameters, p_sep => ':');
             else
                 l_params_array := apex_string.split(p_str => c1.action_parameters, p_sep => ':');
             end if;
         end if;
-        --end if;
 
-        -- le 1er paramètre est toujours le ID de la requête, on le remplace automatiquement
+        -- first parameter is alwasy the ID of the flow process, it is automaticaly replaced
         l_code_plsql := c1.code_plsql;
         l_code_plsql := replace(l_code_plsql, ':PARAM1', p_flw_process_id);
 
@@ -634,12 +632,12 @@ begin
             l_code_plsql := replace(l_code_plsql, ':PARAM' || (i+1), '''' || rtrim(ltrim(l_params_array(i), ''''), '''') || '''');
         end loop;
 
-        -- on execute le code dynamique
+        -- execute dynamique code
         l_code_plsql := 'begin ' || rtrim(l_code_plsql, ';') || '; end;';
 
         -- TODO : insum_debug.log_error(l_code_plsql);
 
-        -- gestion des erreurs : on affichera les messages en cas d'erreur
+        -- error handling : will be displayed in case of error
         begin
             execute immediate l_code_plsql;
         exception when others then
@@ -673,6 +671,66 @@ exception when others then
     p_out_message := 'An error occured ' || sqlerrm;
     --TODO : insum_debug.log_error();
 end move_flow_to_step;
+
+
+procedure demo_send_mail (
+   p_process_id   in flw_process.id%type,
+   p_role_id      in flw_role.id%type,
+   p_user_id      in flw_user.id%type,
+   p_other_mail   in varchar2
+) as
+   l_subject   varchar2(100);
+   l_body_html clob;
+   l_message   varchar2(4000);
+
+begin
+
+   if p_role_id is not null and p_role_id != -1 then
+
+      -- TODO : get all users email in this role
+      select listagg(u.first_name || ' ' || u.last_name || ' (' || u.email_address || ')', '<br/>') within group(order by first_name, last_name) into l_message
+      from flw_role r
+      join flw_role_user ru
+        on ru.role_id = r.id
+      join flw_user u
+        on ru.user_id = u.id
+      where id = p_role_id;
+
+   elsif p_user_id is not null and p_user_id != -1 then
+
+      select first_name || ' ' || last_name || ' (' || email_address || ')' into l_message
+      from flw_user
+      where id = p_user_id;
+
+   elsif p_other_mail is not null then
+      l_message := p_other_mail;
+   end if;
+
+   -- execute only if we have an email
+   if l_message is not null then
+      flw_util.log(p_message => 'Sending email to ' || l_message);
+   end if;
+
+   /*
+   --TODO : send real email
+   l_body_html := 'Test';
+   apex_mail.send(
+        p_to        => 'hmaury@insum.ca'
+      , p_from      => 'system@insum.ca'
+      , p_body      => null
+      , p_body_html => l_body_html
+      , p_subj      => l_subject
+      , p_cc        => null
+      , p_bcc       => null
+      , p_replyto   => null
+    );
+
+    apex_mail.push_queue;
+   */
+    
+
+end demo_send_mail;
+
 
 
 end;

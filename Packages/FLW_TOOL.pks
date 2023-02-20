@@ -256,4 +256,19 @@ create or replace package flw_tool -- authid definer
       p_out_message             out varchar2
    );
 
+
+   -----------------------------------------------------------------------------------
+   /* send mail procedure : used to illustrate how ac action can be called at a specific step
+      @p_flw_process_id : flow ID
+      @p_param_1 : flow ID
+      @p_param_2 : flow ID
+   */
+   -----------------------------------------------------------------------------------
+   procedure demo_send_mail (
+      p_process_id   in flw_process.id%type,
+      p_role_id      in flw_role.id%type,
+      p_user_id      in flw_user.id%type,
+      p_other_mail   in varchar2
+   );   
+
 end flw_tool;

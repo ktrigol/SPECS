@@ -85,3 +85,60 @@ from flw_type_step_option t
 left join flw_type_step_option_lang tl
   on t.id = tl.flw_type_step_option_id
   and tl.spc_lang_id = flw_util.get_language_id()
+
+  /
+
+-- move sequences
+declare
+  l_dummy number;
+begin
+
+  for i in 1..10 loop
+    l_dummy := FLW_ROLE_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_USER_SEQ.nextval;
+  end loop;  
+
+  for i in 1..10 loop
+    l_dummy := FLW_ROLE_USER_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_LANG_SEQ.nextval;
+  end loop;   
+  
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_STEP_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_STEP_LANG_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_STEP_OPTION_SEQ.nextval;
+  end loop;  
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_STEP_OPTION_LANG_SEQ.nextval;
+  end loop;      
+
+  for i in 1..10 loop
+    l_dummy := FLW_ACTION_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_PROCESS_SEQ.nextval;
+  end loop;
+
+  for i in 1..10 loop
+    l_dummy := FLW_TYPE_STEP_ACTION_SEQ.nextval;
+  end loop;  
+
+end;

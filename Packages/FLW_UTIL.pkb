@@ -62,7 +62,8 @@ create or replace package body flw_util -- authid definer
    as
    begin
       --TODO : implement insert or call insum_debug
-      null;
+      insert into flw_app_log(log_date, log_type, message, ora_sqlcode, oral_sqlerrm, error_backtrace)
+      values(sysdate, p_message_type, p_message, null, null, dbms_utility.format_error_backtrace);
    end log;
 
 end flw_util;

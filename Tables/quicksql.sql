@@ -141,12 +141,12 @@ flw_action /auditcols
 
 flw_type_step_action /auditcols
     id num /pk -- primary key
-    flw_type_step_id num /fk flw_type_step(id) /nn -- references the language ID in flw_type_step table
+    flw_type_step_option_id num /fk flw_type_step_option(id) /nn -- references the option ID in flw_type_step_option table
     flw_action_id num /fk flw_action(id) /nn -- references the action ID in flw_action table
     action_parameters vc4000 -- parameters sent to the action (PL/SLQ)
-    spc_id num /fk spc_definition(id) -- references the specificity ID in spc_definition table
-    role_id num -- role ID autorized to trigger this flow
-    user_id num -- user ID autorized to trigger this flow
+    spc_id num /fk spc_definition(id) -- specificity that will be impacted by the action (references the specificity ID in spc_definition table)
+    role_id num -- action will be executed for all users having this role
+    user_id num -- action will be executed for this user only
 
 flw_history /auditcols
     id num /pk -- primary key
@@ -164,5 +164,15 @@ flw_history_det /auditcols
     value_before	vc4000  -- value before moving the flow
     value_after	vc4000 -- value after moving the flow
     spc_id num /fk spc_definition(id) -- references the specificity ID in spc_definition table
+
+flw_app_log /auditcols
+    id num /pk -- primary key
+    log_date date /nn -- date of log
+    log_type vc10 /nn /check 'ERROR,INFO'
+    message clob -- custom message
+    ora_sqlcode num -- sql code error
+    oral_sqlerrm vc4000 -- sql error message
+    error_backtrace vc4000 -- backtrace
+
     
     
