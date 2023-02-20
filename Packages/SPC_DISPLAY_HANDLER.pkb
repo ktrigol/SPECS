@@ -145,7 +145,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 on    t1.format_id = t3.id
                 where t1.active_ind = 1  
                 and   t1.app_id = p_app_id 
-                and   t1.page_id = p_page_id 
+                and   nvl(t1.page_id,p_page_id) = p_page_id
                 and   (nvl(t2.ref_type_id, -1) = nvl(p_ref_type_id , -1)
                      and nvl(t2.ref_id,-1) = nvl(p_ref_id,-1))
                 union 
@@ -173,7 +173,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 on   t1.format_id = t3.id
                 where t1.active_ind = 1  
                 and   t1.app_id = p_app_id 
-                and   t1.page_id = p_page_id 
+                and   nvl(t1.page_id,p_page_id) = p_page_id 
                 and    not exists ( 
                     select 1  
                     from spc_data t2 
