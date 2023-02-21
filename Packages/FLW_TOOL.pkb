@@ -694,7 +694,7 @@ begin
         on ru.role_id = r.id
       join flw_user u
         on ru.user_id = u.id
-      where id = p_role_id;
+      where r.id = p_role_id;
 
    elsif p_user_id is not null and p_user_id != -1 then
 
