@@ -108,6 +108,22 @@ create or replace PACKAGE "SPC_TOOL" AS
                              , out_modified_by    out varchar2
       );
     
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the value of a given specificity
+    Parameters: 
+        @ p_spc_id     NOT NULL       ID of the specificity
+        @ p_ref_id     NOT NULL       ID of the reference
+        @ p_lang       NULL           Code of the language
+        @ p_format     NULL           Format of the value
+    -------------------------------------------------------------------------
+    */
+
+    function get_value_spc( p_spc_id     in spc_definition.id%type
+                          , p_ref_id     in spc_data.ref_id%type
+                          , p_lang       in spc_lang.lang_code%type default null
+                          , p_format     in varchar2 default 'Y') 
+    return varchar2;
 
 END SPC_TOOL;
 

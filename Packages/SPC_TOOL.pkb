@@ -212,6 +212,99 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
         raise_application_error(-20000, 'Error in get_audit_resp: '||sqlerrm);
     end get_audit_resp;
 
-  
-    
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the value of a given specificity
+    Parameters: 
+        @ p_spc_id     NOT NULL       ID of the specificity
+        @ p_ref_id     NOT NULL       ID of the reference
+        @ p_lang       NULL           Code of the language
+        @ p_format     NULL           Format of the value
+    -------------------------------------------------------------------------
+    */
+
+    function get_value_spc( p_spc_id     in spc_definition.id%type
+                          , p_ref_id     in spc_data.ref_id%type
+                          , p_lang       in spc_lang.lang_code%type default null
+                          , p_format     in varchar2 default 'Y') 
+    return varchar2
+    is
+      -- Variables
+      l_field_type spc_definition.field_type%type;
+      /*l_list_group spc_definition.list_group%type;
+      l_list_code  spc_definition.list_code%type;*/
+      l_value      spc_data.value%type;
+      l_format_id  spc_definition.format_id%type;
+      l_format     spc_format.format%type;
+
+    begin
+      -- Get the type of the specificity   
+      select t1.field_type, /*t1.list_group, t1.list_code,*/ t2.value, t1.format_id
+      into l_field_type, /*l_list_group, l_list_code,*/ l_value, l_format_id
+      from spc_definition t1
+      join spc_data t2
+      on t1.id = t2.spc_id
+      where t1.id = p_spc_id
+      and t2.ref_id = p_ref_id;
+
+      -- return null if the value is null
+      if l_value = '%null%' then
+          return null;
+      end if;
+      
+      -- in case of format Y, format the value
+      if p_format = 'Y' then 
+          -- depending on the type of the specificity, different formatting
+          if l_field_type = 'DATE' then
+              begin
+                  if l_value is not null then
+                      -- get the format of the date
+                      begin
+                        select format
+                        into l_format
+                        from spc_format 
+                        where class = 'date-format';
+                      exception
+                        when no_data_found then
+                          l_format := 'DD-MM-YYYY';
+                      end;
+                      -- format the date
+                      l_value := to_char(to_date(l_value, 'DD-MM-YYYY'), l_format);
+                  end if;
+              exception
+                  when others then return null;
+              end;
+          elsif l_field_type = 'HOUR' then
+              begin
+                  if l_value is not null then
+                      -- get the format of the hour
+                      begin
+                        select format
+                        into l_format
+                        from spc_format 
+                        where class = 'hour-format';
+                      exception
+                        when no_data_found then
+                          l_format := 'HH24:MI';
+                      end;
+                      -- format the hour
+                      l_value := to_char(to_date(l_value, 'HH24:MI'), l_format);
+                  end if;
+              exception
+                  when others then null;
+              end;
+          elsif l_field_type = 'LIST' then
+              -- get the description of the value in the list
+              l_value := spc_tool.get_spc_lov_desc(l_value, p_lang);  
+          --elsif l_field_type = 'TEXT' then
+          -- pending the logical formatting of the text   
+          end if; 
+
+      end if;
+      return l_value;
+    exception
+        when no_data_found then  return null;
+        when others then return 'Error geting the value of the specificity';
+    end get_value_spc;
+   
 END SPC_TOOL;
