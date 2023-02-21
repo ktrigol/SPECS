@@ -707,16 +707,16 @@ begin
    end if;
 
    -- execute only if we have an email
-   if l_message is not null then
+   /*if l_message is not null then
       flw_util.log(p_message => 'Sending email to ' || l_message);
-   end if;
+   end if;*/
 
-   /*
+   
    --TODO : send real email
    l_body_html := 'Test';
    apex_mail.send(
-        p_to        => 'hmaury@insum.ca'
-      , p_from      => 'system@insum.ca'
+        p_to        => apex_util.get_session_state('APP_USER')--'hmaury@insum.ca'
+      , p_from      => 'no-reply@insum.ca'
       , p_body      => null
       , p_body_html => l_body_html
       , p_subj      => l_subject
@@ -726,11 +726,7 @@ begin
     );
 
     apex_mail.push_queue;
-   */
-    
 
 end demo_send_mail;
-
-
 
 end;
