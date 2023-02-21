@@ -7,6 +7,7 @@ DROP TABLE "SPC_DEFINITION";
                                   , "APP_ID" NUMBER
                                   , "PAGE_ID" NUMBER 
                                   , "GROUP_DEF_ID" NUMBER 
+                                  , "REF_TYPE_ID" NUMBER
                                   , "SPC_CODE" VARCHAR2(500) COLLATE "USING_NLS_COMP"
                                   , "DISP_SEQ" NUMBER 
                                   , "FIELD_TYPE" VARCHAR2(60) COLLATE "USING_NLS_COMP"
@@ -34,6 +35,7 @@ DROP TABLE "SPC_DEFINITION";
    COMMENT ON COLUMN "SPC_DEFINITION"."APP_ID" IS 'Application ID to relate to the specificity';
    COMMENT ON COLUMN "SPC_DEFINITION"."PAGE_ID" IS 'Page ID to relate to the specificity';
    COMMENT ON COLUMN "SPC_DEFINITION"."GROUP_DEF_ID" IS 'References the ID of the table SPC_GROUP_DEFINITION';
+   COMMENT ON COLUMN "SPC_DEFINITION"."REF_TYPE_ID" IS 'References the ID of the table SPC_REF_TYPE';
    COMMENT ON COLUMN "SPC_DEFINITION"."SPC_CODE" IS 'Allows the specificity to be identify by a code';
    COMMENT ON COLUMN "SPC_DEFINITION"."DISP_SEQ" IS 'Allows the specificities to be order by the sequence number';
    COMMENT ON COLUMN "SPC_DEFINITION"."FIELD_TYPE" IS 'Indicates the type of item that corresponds to the specificity (date,list,text,etc..)';
@@ -127,4 +129,5 @@ ALTER TRIGGER "SPC_DEFINITION_BIU" ENABLE;
   
   ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK1" FOREIGN KEY ("GROUP_DEF_ID") REFERENCES "SPC_GROUP_DEFINITION" ("ID") ENABLE;
   ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK2" FOREIGN KEY ("FORMAT_ID") REFERENCES "SPC_FORMAT" ("ID") ENABLE;
+  ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK3" FOREIGN KEY ("REF_TYPE_ID") REFERENCES "SPC_REF_TYPE" ("ID") ENABLE;
   --ALTER TABLE "SPC_DEFINITION" ADD CONSTRAINT "SPC_DEFINITION_FK3" FOREIGN KEY ("COUNTER_CODE") REFERENCES "SPC_VAL_COUNTER" ("CODE") ENABLE;
