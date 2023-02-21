@@ -92,14 +92,14 @@ begin
         :new.created    := sysdate; 
         :new.created_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
     end if; 
-    if updating and :new.group_def_id != :old.group_def_id then
+    /*if updating and :new.group_def_id != :old.group_def_id then
         select nvl(max(d.disp_seq) + 10, 10)
         into :new.disp_seq
         from spc_definition d
         where d.app_id = :new.app_id
         and   d.page_id = :new.page_id
         and   d.group_def_id = :new.group_def_id;
-    end if;
+    end if;*/
     :new.modified    := sysdate; 
     :new.modified_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
 end SPC_DEFINITION_BIU;
