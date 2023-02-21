@@ -122,7 +122,7 @@ flw_type_step_option /auditcols
     readonly_spc_ids vc4000  -- 'specificities IDS in readonly mode for this step';
     display_seq num          -- order used to display the buttons
     css_button vc500         -- APEX class to use on this button
-    /unique flw_type_step_id, display_seq
+    -- /unique flw_type_step_id, display_seq -- TODO : find a different way to check if uniq
 
 flw_type_step_option_lang /auditcols -- description for button name
     id num /pk -- primary key
