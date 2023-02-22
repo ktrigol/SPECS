@@ -116,6 +116,7 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
     function print_spc_by_code ( p_ref_type_id  in spc_ref_type.id%type 
                                , p_ref_id       in spc_data.ref_id%type
                                , p_langue       in spc_lang.lang_code%type default null
+                               , p_intern_id    in demo_stagiaire.id%type default null
     ) return clob
    is
       -- Variables
@@ -136,6 +137,11 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
       and*/   t1.ref_id = p_ref_id
       and t2.print_ind = 1;
 
+      -- Cursor for intern
+      cursor s_intern(p_intern_id in demo_stagiaire.id%type) is
+         select nom, prenom,date_naissance,no_tel,adresse_courriel
+         from demo_stagiaire
+         where id = p_intern_id;
 
    begin
       -- format the output
@@ -146,6 +152,17 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
 
       apex_json.open_array('data'); -- OPEN ARRAY DATA
       apex_json.open_object();      -- OPEN OBJECT DATA
+
+        for rec in s_intern ( p_intern_id => p_ref_id) 
+        loop
+            -- feed with intern details
+            apex_json.write('ITEM_PRENOM_STA' , rec.prenom);
+            apex_json.write('ITEM_NOM_STA' , rec.nom);
+            apex_json.write('ITEM_DATE_NAISS_STA' , rec.date_naissance);
+            apex_json.write('ITEM_TEL_STA' , rec.no_tel);
+            apex_json.write('ITEM_ADR_COURRIEL_STA' , rec.adresse_courriel);            
+        end loop;
+
 
          for rec in c_spc ( p_ref_type_id => p_ref_type_id
                           , p_ref_id      => p_ref_id
