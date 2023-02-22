@@ -33,7 +33,7 @@ create or replace PACKAGE BODY "OBJ_FILE_PKG" AS
     Function Description: Generates and return the SQL for the region with the object file storage.
     Return: SQL 
     Parameters:   
-        @ p_ref_type_id NOT NULL        Reference type id value.
+        @ p_ref_type    NOT NULL        Reference type id value.
         @ p_ref_id      NULL            Reference id value.
     ------------------------------------------------------------------------- 
     */ 
@@ -63,7 +63,8 @@ create or replace PACKAGE BODY "OBJ_FILE_PKG" AS
                  'select ID '||
                  '     , FILE_NAME '||
                  '     , FILE_SIZE '||
-                 '     , OBJECT' ||
+                 '     , sys.dbms_lob.getlength("OBJECT") as OBJECT' ||
+                 '     , sys.dbms_lob.getlength("OBJECT") as PREVIEW' ||
                  '     , MIME_TYPE '||
                 ' from OBJ_FILE '|| 
                 ' where REF_TYPE_ID = '''||l_ref_type_id||''' '||
@@ -78,5 +79,65 @@ create or replace PACKAGE BODY "OBJ_FILE_PKG" AS
                         ' from dual';
             return l_result;
     end get_obj_query;
-   
+
+    /************************************************************************ 
+    -------------------------------------------------------------------------  
+    Procedure Description: Inserts a new object file into the database.
+    Return: SQL 
+    Parameters:   
+        @ p_ref_type_id NOT NULL        Reference type id value.
+        @ p_ref_id      NULL            Reference id value.
+        @ p_collection  NOT NULL        Collection name.
+    ------------------------------------------------------------------------- 
+    */ 
+
+    procedure insert_object_dz ( p_ref_type_id     in varchar2 
+                               , p_ref_id          in number
+                               , p_collection      in varchar2
+    )is 
+      -- Cursor
+      cursor c_file ( p_collection  in varchar2)is 
+      select  c001    as filename,
+              c002    as mime_type,
+              d001    as date_created,
+              n001    as file_id,
+              blob001 as blob_content
+      from apex_collections
+      where collection_name = p_collection;
+    begin
+      -- Insert the files into the database.
+      for file in c_file (p_collection)
+      loop
+        insert into obj_file (ref_type_id, ref_id, file_name, mime_type, created, object, file_size)
+        values ( p_ref_type_id
+               , p_ref_id
+               , file.filename
+               , file.mime_type
+               , file.date_created
+               , file.blob_content
+               , dbms_lob.getlength(file.blob_content)
+               );
+      end loop;
+
+      -- Truncate the collection.
+      apex_collection.truncate_collection(p_collection_name => p_collection);
+
+    end insert_object_dz;
+
+    /************************************************************************ 
+    -------------------------------------------------------------------------  
+    Procedure Description: deletes an object file from the database.
+    Parameters:   
+        @ p_obj_id      NOT NULL        Object id value.  
+    ------------------------------------------------------------------------- 
+    */ 
+
+    procedure d_object_dz ( p_obj_id     in obj_file.id%type
+    )is 
+    begin
+      -- Delete the file from the database.
+      delete from obj_file
+      where id = p_obj_id;
+      commit;
+    end d_object_dz;
 END OBJ_FILE_PKG;
