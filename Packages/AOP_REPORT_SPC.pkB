@@ -58,7 +58,8 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
       join spc_definition t2 
       on t1.spc_id = t2.id 
       where /*t2.ref_type_id = p_ref_type_id
-      and*/   t1.ref_id = p_ref_id;
+      and*/   t1.ref_id = p_ref_id
+      and t2.print_ind = 1;
 
 
    begin
@@ -132,7 +133,8 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
       join spc_definition t2 
       on t1.spc_id = t2.id 
       where /*t2.ref_type_id = p_ref_type_id
-      and*/   t1.ref_id = p_ref_id;
+      and*/   t1.ref_id = p_ref_id
+      and t2.print_ind = 1;
 
 
    begin
