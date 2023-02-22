@@ -106,6 +106,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 , mandatory_ind 
                 , read_only_ind
                 , active_ind 
+                , help_text_ind
                 , list_group 
                 , list_code 
                 , coalesce(spcs.value, col.value) as value 
@@ -123,8 +124,9 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                     , spc_tool.get_description_lang(t1.id,p_lang) as title 
                     , spc_tool.get_des_helptext_lang(t1.id,p_lang) as help_text
                     , t1.mandatory_ind 
-                    , t1.read_only_ind
+                    , t1.read_only_ind 
                     , t1.active_ind 
+                    , t1.help_text_ind 
                     , t1.list_group 
                     , t1.list_code 
                     , nvl(t2.value ,t1.default_value) as value 
@@ -155,7 +157,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                     , spc_tool.get_des_helptext_lang(t1.id,p_lang) as help_text
                     , t1.mandatory_ind 
                     , t1.read_only_ind
-                    , t1.active_ind 
+                    , t1.active_ind
+                    , t1.help_text_ind 
                     , t1.list_group 
                     , t1.list_code 
                     , t1.default_value as value 
@@ -221,7 +224,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                     , p_clob001 => l_item
                     , p_c001 => l_title 
                     , p_c002 => p_lang
-                    , p_c003 => rec.help_text
+                    , p_c003 => case when rec.help_text_ind = 1 then rec.help_text else null end
                     , P_n001 => rec.disp_seq
                     , p_n002 => rec.group_def_id 
                 ); 
