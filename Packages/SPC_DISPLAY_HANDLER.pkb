@@ -187,16 +187,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 select c001 as spc_id, c002 as value 
                 from apex_collections 
                 where collection_name = 'SPC_DT'||p_app_id||'P?='||p_page_id
-            ) col
+            ) col 
             where spcs.spc_id = col.spc_id(+) 
-            -- exclude some specificities
-            and spcs.spc_id not in(
-                ( 
-                    select c001 as spc_id, c002 as value 
-                    from apex_collections 
-                    where collection_name = 'SPC_EX'||p_app_id||'P?='||p_page_id
-                )
-            )
             order by spcs.disp_seq; 
  
     begin 

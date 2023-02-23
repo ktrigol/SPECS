@@ -4,7 +4,6 @@ select
     t.id                              id,
     t.priority                        priority,
     t.ind_active                      ind_active,
-    t.spc_ref_type_id                 spc_ref_type_id,
     t.created                         created,
     t.created_by                      created_by,
     t.updated                         updated,
