@@ -688,7 +688,8 @@ procedure demo_send_mail (
    l_subject   varchar2(100);
    l_body_html clob;
    l_message   varchar2(4000);
-
+   l_out_statut varchar2(20);
+   l_out_message varchar2(4000);
 begin
 
    if p_role_id is not null and p_role_id != -1 then
@@ -717,7 +718,7 @@ begin
       flw_util.log(p_message => 'Sending email to ' || l_message);
    end if;*/
 
-   
+   /*
    --TODO : send real email
    l_body_html := 'Test';
    apex_mail.send(
@@ -729,9 +730,27 @@ begin
       , p_cc        => null
       , p_bcc       => null
       , p_replyto   => null
+    );*/
+
+    flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
+                                    , p_ref_id      => p_process_id
+                                    , p_to          => null
+                                    , p_cc          => null
+                                    , p_bcc         => null
+                                    , p_replyto     => null
+                                    , p_subject     => null
+                                    --, p_attachments => 
+                                    , p_immediate   => true
+                                    , p_lang        => null --flw_util.get_language_id()
+                                    , out_error     => l_out_statut
+                                    , out_error_msg => l_out_message
     );
 
     apex_mail.push_queue;
+   
+   if l_out_statut = 'ERROR' then
+      raise_application_error(-20000, l_out_message);
+   end if;
 
 end demo_send_mail;
 
