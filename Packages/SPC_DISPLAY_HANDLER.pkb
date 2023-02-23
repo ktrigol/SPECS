@@ -216,7 +216,12 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                                                        , p_ref_id          => p_ref_id
                                                        , p_lang            => p_lang 
                         );   
-            l_title := '<strong>' || rec.title || '</strong>';
+           -- l_title := '<strong>' || rec.title || '</strong>';
+           l_title := rec.title;
+           -- TODO : Johanna wat to have the title with a background all along
+           /*if rec.field_type = k_type_title then 
+                l_title :=  '<span style="background-color: cornflowerblue;">' || rec.title || '</span>';
+           end if;*/
             
             -- Add the item to the collection
             apex_collection.add_member( 
@@ -373,6 +378,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 ); 
             /*when k_type_title then 
                 l_return :=  '<strong>' || p_title || '</strong>'; */
+                    
             else 
                 l_return := null; 
         end case; 
