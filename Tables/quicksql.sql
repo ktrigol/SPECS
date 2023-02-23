@@ -61,6 +61,7 @@ flw_type /auditcols
     --trigger_spc_ids vc4000 : to be done later on
     priority num /default 1 /nn -- priority between flows
     ind_active num  /nn /check 0,1 -- flag indicating if flow is active or not active
+    spc_ref_type_id num /fk spc_ref_type(id) -- references the reference type ID in spc_ref_type table
     -- TODO /default 1
 
 

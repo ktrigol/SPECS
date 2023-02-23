@@ -102,6 +102,7 @@ end get_flw_type_step_desc;
    create flow definition
    @p_priority : priority between flows
    @p_ind_active : active by default
+   @p_spc_ref_type_id : specificities reference type
    @p_out_id : returns the ID of the row inserted
    @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
    @p_out_message : returns the error details when an error occured, null otherwise
@@ -109,6 +110,7 @@ end get_flw_type_step_desc;
 procedure create_flow_type (
    p_priority           in  flw_type.priority%type default null,
    p_ind_active         in  flw_type.ind_active%type default 1,
+   p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
    p_out_id             out flw_type.id%type,
    p_out_status         out varchar2,
    p_out_message        out varchar2
@@ -122,8 +124,8 @@ begin
    end if;
 
    --> insert row
-   insert into flw_type(priority, ind_active)
-   values(l_next_priority, p_ind_active)
+   insert into flw_type(priority, ind_active, spc_ref_type_id)
+   values(l_next_priority, p_ind_active, p_spc_ref_type_id)
    returning id into p_out_id;
 
    p_out_status := 'SUCCESS';
@@ -141,6 +143,7 @@ end create_flow_type;
    @p_id : flow type ID
    @p_priority : priority between flows
    @p_ind_active : active or not active
+   @p_spc_ref_type_id : specificities reference type
    @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
    @p_out_message : returns the error details when an error occured, null otherwise
 */
@@ -148,6 +151,7 @@ procedure update_flow_type (
    p_id                 in  flw_type.id%type,
    p_priority           in  flw_type.priority%type,
    p_ind_active         in  flw_type.ind_active%type,
+   p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
    p_out_status         out varchar2,
    p_out_message        out varchar2
 ) as
@@ -156,7 +160,8 @@ begin
    --> insert row
    update flw_type
    set priority = p_priority, 
-       ind_active = p_ind_active
+       ind_active = p_ind_active,
+       spc_ref_type_id = p_spc_ref_type_id
    where id = p_id;
 
    p_out_status := 'SUCCESS';
