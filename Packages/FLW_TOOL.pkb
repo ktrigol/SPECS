@@ -84,7 +84,8 @@ return varchar2 as
 begin
 
     select
-        s.step_number || ' = ' || s.status || ' ' || s.note as d
+        --s.step_number || ' = ' || s.status || ' ' || s.note as d
+        s.status  as d
     into l_description
     from flw_type_step_v s
     where s.id = p_flw_type_step_id;
