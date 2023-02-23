@@ -52,21 +52,23 @@ create or replace PACKAGE "SPC_DISPLAY_HANDLER" AS
                           , p_group_id    in number 
     ) return varchar2;
     
-    /************************************************************************
+    /************************************************************************ 
+    -------------------------------------------------------------------------  
+    Procedure Description: Generates and inserts into the collection the HTML for the specificities  
+    Parameters:   
+        @ p_app_id      NOT NULL        Apex Application id value  
+        @ p_page_id     NOT NULL        Apex Page id value  
+        @ p_ref_type_id NULL            ID of the type of object the specificities are related to 
+        @ p_red_id      NULL            ID of the object the specificites are related to  
+        @ p_exc_ids     NULL            IDs of the specificities to exclude from the list, separated by colon (:)
+        @ p_lang        NULL            Language in which the specificites will be shown  
     ------------------------------------------------------------------------- 
-    Procedure Description: Generates and inserts into the collection the HTML for the specificities 
-    Parameters:  
-        @ p_app_id      NOT NULL        Apex Application id value 
-        @ p_page_id     NOT NULL        Apex Page id value 
-        @ p_ref_type_id NULL            ID of the type of object the specificities are related to
-        @ p_red_id      NULL            ID of the object the specificites are related to 
-        @ p_lang        NULL            Language in which the specificites will be shown 
-    -------------------------------------------------------------------------
-    */
-    procedure init_spc( p_app_id      in number
-                      , p_page_id     in number
-                      , p_ref_type_id in number
+    */ 
+    procedure init_spc( p_app_id      in number 
+                      , p_page_id     in number 
+                      , p_ref_type_id in number 
                       , p_ref_id      in number
+                      , p_exc_ids     in varchar2 
                       , p_lang        in varchar2 default null
     );
 

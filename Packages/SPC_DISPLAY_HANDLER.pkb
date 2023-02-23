@@ -77,13 +77,15 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
         @ p_page_id     NOT NULL        Apex Page id value  
         @ p_ref_type_id NULL            ID of the type of object the specificities are related to 
         @ p_red_id      NULL            ID of the object the specificites are related to  
+        @ p_exc_ids     NULL            IDs of the specificities to exclude from the list, separated by colon (:)
         @ p_lang        NULL            Language in which the specificites will be shown  
     ------------------------------------------------------------------------- 
     */ 
     procedure init_spc( p_app_id      in number 
                       , p_page_id     in number 
                       , p_ref_type_id in number 
-                      , p_ref_id      in number 
+                      , p_ref_id      in number
+                      , p_exc_ids     in varchar2 
                       , p_lang        in varchar2 default null
     ) 
     is 
@@ -188,7 +190,9 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 from apex_collections 
                 where collection_name = 'SPC_DT'||p_app_id||'P?='||p_page_id
             ) col 
-            where spcs.spc_id = col.spc_id(+) 
+            where spcs.spc_id = col.spc_id(+)
+            and spcs.spc_id not in (select column_value 
+                                   from table(apex_string.split(p_exc_ids,':')))
             order by spcs.disp_seq; 
  
     begin 
@@ -227,9 +231,10 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
             apex_collection.add_member( 
                       p_collection_name => 'SPC_'||p_app_id||'P?='||p_page_id -- case when rec.nb <= 50 then 'C_SPEC_COL1' else 'C_SPEC_COL2' end 
                     , p_clob001 => l_item
-                    , p_c001 => l_title 
+                    , p_c001 => l_title||case when rec.mandatory_ind = 1 then ' <span title="Mandatory" class="u-color-9-text">*</span>' else '' end
                     , p_c002 => p_lang
                     , p_c003 => case when rec.help_text_ind = 1 then rec.help_text else null end
+                    , p_c004 => rec.field_type
                     , P_n001 => rec.disp_seq
                     , p_n002 => rec.group_def_id 
                 ); 
