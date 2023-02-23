@@ -22,11 +22,11 @@ create or replace PACKAGE BODY "AOP_JSON_PKG" AS
                 --g_bind_title := l_vc_arr2(1);
                 l_return := aop_report_spc.print_spc (p_ref_type_id  => l_vc_arr2(2)
                                                      ,p_ref_id       => l_vc_arr2(3)
-                                                     ,p_langue       => null); 
+                                                     ,p_lang         => null); 
         when 'PRINT_SPCS_BY_CODE' then
                l_return := aop_report_spc.print_spc_by_code (p_ref_type_id  => l_vc_arr2(2)
                                                             ,p_ref_id       => l_vc_arr2(3)
-                                                            ,p_langue       => null); 
+                                                            ,p_lang         => null); 
         else 
                 l_return := null; 
         end case;  

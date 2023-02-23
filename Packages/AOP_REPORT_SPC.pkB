@@ -39,7 +39,7 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
     */
     function print_spc ( p_ref_type_id  in spc_ref_type.id%type 
                        , p_ref_id       in spc_data.ref_id%type
-                       , p_langue       in spc_lang.lang_code%type default null
+                       , p_lang         in spc_lang.lang_code%type default null
     ) return clob
    is
       -- Variables
@@ -48,12 +48,14 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
       l_registre_blob blob;
    
       -- Cursor
-      cursor c_spc (p_ref_type_id  in spc_ref_type.id%type 
-                     ,p_ref_id       in spc_data.ref_id%type
-                     ,p_langue       in spc_lang.lang_code%type) IS
+      cursor c_spc ( p_ref_type_id    in spc_ref_type.id%type 
+                   , p_ref_id         in spc_data.ref_id%type
+                   , p_lang           in spc_lang.lang_code%type) IS
       select spc_tool.get_description_lang ( p_spc_id => t1.spc_id
-                                          , p_lang   => p_langue) as label
-            , t1.value as value
+                                           , p_lang   => p_lang) as label
+            ,spc_tool.get_value_spc( p_spc_id => t2.id
+                                   , p_ref_id => t1.ref_id
+                                   , p_lang   => p_lang ) as value
       from spc_data t1
       join spc_definition t2 
       on t1.spc_id = t2.id 
@@ -76,9 +78,9 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
 
          apex_json.open_array('SPEC'); -- OPEN ARRAY SPEC
 
-         for rec in c_spc (p_ref_type_id => p_ref_type_id
-                           ,p_ref_id      => p_ref_id
-                           ,p_langue      => p_langue) 
+         for rec in c_spc ( p_ref_type_id  => p_ref_type_id
+                          , p_ref_id       => p_ref_id
+                          , p_lang         => p_lang) 
          loop
             apex_json.open_object();   -- OPEN OBJECT SPEC
             apex_json.write('NAME', rec.label);
@@ -111,11 +113,12 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
         @ p_ref_type_id  NOT NULL        ID of the reference type
         @ p_ref_id       NOT NULL        ID of the reference
         @ p_lang         NOT NULL        Code of the language
+        @ p_intern_id    NOT NULL        ID of the intern
     -------------------------------------------------------------------------
     */
     function print_spc_by_code ( p_ref_type_id  in spc_ref_type.id%type 
                                , p_ref_id       in spc_data.ref_id%type
-                               , p_langue       in spc_lang.lang_code%type default null
+                               , p_lang         in spc_lang.lang_code%type default null
                                , p_intern_id    in demo_stagiaire.id%type default null
     ) return clob
    is
@@ -125,10 +128,12 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
       l_registre_blob blob;
    
       -- Cursor
-      cursor c_spc (p_ref_type_id  in spc_ref_type.id%type 
-                     ,p_ref_id       in spc_data.ref_id%type
-                     ,p_langue       in spc_lang.lang_code%type) IS
-      select t1.value as value
+      cursor c_spc ( p_ref_type_id  in spc_ref_type.id%type 
+                   , p_ref_id       in spc_data.ref_id%type
+                   , p_lang         in spc_lang.lang_code%type) IS
+      select spc_tool.get_value_spc( p_spc_id => t2.id
+                                   , p_ref_id => t1.ref_id
+                                   , p_lang   => p_lang ) as value
          , t2.spc_code as spc_code
       from spc_data t1
       join spc_definition t2 
@@ -166,7 +171,7 @@ create or replace PACKAGE BODY "AOP_REPORT_SPC" as
 
          for rec in c_spc ( p_ref_type_id => p_ref_type_id
                           , p_ref_id      => p_ref_id
-                          , p_langue      => p_langue) 
+                          , p_lang        => p_lang) 
          loop
             -- Replace the item code by the item value
             apex_json.write(rec.spc_code , rec.value);
