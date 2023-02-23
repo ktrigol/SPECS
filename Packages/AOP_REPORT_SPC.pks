@@ -39,7 +39,7 @@ create or replace PACKAGE "AOP_REPORT_SPC" as
     */
     function print_spc ( p_ref_type_id  in spc_ref_type.id%type 
                        , p_ref_id       in spc_data.ref_id%type
-                       , p_langue       in spc_lang.lang_code%type default null
+                       , p_lang         in spc_lang.lang_code%type default null
     ) return clob;
 
     /************************************************************************
@@ -54,7 +54,8 @@ create or replace PACKAGE "AOP_REPORT_SPC" as
     */
     function print_spc_by_code ( p_ref_type_id  in spc_ref_type.id%type 
                                , p_ref_id       in spc_data.ref_id%type
-                               , p_langue       in spc_lang.lang_code%type default null
+                               , p_lang         in spc_lang.lang_code%type default null
+                               , p_intern_id    in demo_stagiaire.id%type default null
     ) return clob;
 
 
