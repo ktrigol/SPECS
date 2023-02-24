@@ -579,6 +579,13 @@ begin
         update flw_process
           set current_flw_step_id = l_flw_type_step_option.next_step_id
         where id = p_flw_process_id;
+    -------------------------------------
+    -- flow process is completed
+    ------------------------------------
+    else
+       update flw_process
+          set status = 'COMPLETED'
+        where id = p_flw_process_id;
     end if;
 
     ------------------------------------------------------------
@@ -760,4 +767,4 @@ begin
 
 end demo_send_mail;
 
-end;
+end flw_tool;
