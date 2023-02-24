@@ -66,4 +66,50 @@ create or replace package body flw_util -- authid definer
       values(sysdate, p_message_type, p_message, null, null, dbms_utility.format_error_backtrace);
    end log;
 
+   /*
+      function to return percent completion flow
+   */ 
+   function get_percent_completion(p_flow_id number) return number is
+   l_percent        number;
+   l_nb_steps       number;
+   l_current_step   number;
+   l_nb_step_cmp    number;
+   l_flow_type_id   number;
+   begin
+    -- check if request was completed or cancled
+
+    -- get flow type id for this process
+    select flw_type_id 
+    into   l_flow_type_id
+    from   flw_process 
+    where  id = p_flow_id;
+
+    -- get the total number of the steps for this flow type
+    select count(1)
+    into   l_nb_steps
+    from   flw_type_step
+    where  flw_type_id = l_flow_type_id;
+
+    -- get the current flow sequence
+    select step_number
+    into   l_current_step
+    from   flw_type_step
+    where  id in (select current_flw_step_id from flw_process where id = p_flow_id);
+
+    -- get number of completed steps
+    select count(1)
+    into   l_nb_step_cmp
+    from   flw_type_step
+    where  flw_type_id =  l_flow_type_id
+    and    step_number <= l_current_step;
+
+    -- calculate the percent
+    if l_nb_step_cmp is not null and l_nb_steps !=0 then RETURN TRUNC((l_nb_step_cmp/l_nb_steps) * 100,0);
+                else   RETURN 0; end if; -- prevent issue div by 0
+
+    return l_percent;
+   exception
+    when others then return -1;
+   end get_percent_completion;
+
 end flw_util;
