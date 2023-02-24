@@ -218,6 +218,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                                                        , p_class           => rec.class
                                                        , p_item_id         => rec.item_id
                                                        , p_ref_id          => p_ref_id
+                                                       , p_ref_type_id     => p_ref_type_id
                                                        , p_lang            => p_lang 
                         );   
            -- l_title := '<strong>' || rec.title || '</strong>';
@@ -262,6 +263,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
         @ p_class           NULL            Indicates the class of the item
         @ p_item_id         NULL            Indicates the id of the item
         @ p_ref_id          NULL            Indicates the id of the reference
+        @ p_ref_type_id     NULL            Indicates the type of the reference
         @ p_lang            NULL            Language in which the specificites will be shown  
     -------------------------------------------------------------------------
     */ 
@@ -280,6 +282,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                           , p_class             in varchar2 default null
                           , p_item_id           in varchar2 default null
                           , p_ref_id            in number default null
+                          , p_ref_type_id       in number default null
                           , p_lang              in varchar2
     ) return clob 
     is  
@@ -299,6 +302,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                         || case when p_counter = 1 then ' gen_code' end
                         || case when p_item_id is not null then '" id="'|| p_item_id end 
                         || '" data-specID="' || p_spc_id 
+                        || '" data-refTypeID="' || p_ref_type_id 
                         || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                         || '" data-label="' || p_title || '"' 
                         || case when p_read_only_ind = 1 then ' disabled '  end 
@@ -322,7 +326,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                       || case when p_mandatory_ind = 1 then ' mandatoryItem' else ' ' end 
                       --|| case when p_item_id is not null then '" id="'|| p_item_id   end 
                       --|| '" id="apex_date_02_00'--|| p_item_id
-                     || '" data-specID="' || p_spc_id  
+                      || '" data-specID="' || p_spc_id  
+                      || '" data-refTypeID="' || p_ref_type_id 
                       || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                       || '" data-label="' || p_title || '"' 
                       || case when p_read_only_ind = 1 then  '" id="'|| p_item_id||'" disabled ' end 
@@ -342,6 +347,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                         || case when p_mandatory_ind = 1 then ' mandatoryItem' else '' end
                         || case when p_item_id is not null then '" id="'|| p_item_id end 
                         || '" data-specID="' || p_spc_id  
+                        || '" data-refTypeID="' || p_ref_type_id 
                         || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                         || '" data-label="' || p_title || '"' 
                         || case when p_read_only_ind = 1 then ' disabled ' end 
@@ -360,6 +366,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                         || case when p_mandatory_ind = 1 then ' mandatoryItem' else '' end  
                         || case when p_item_id is not null then '" id="'|| p_item_id end 
                         || '" data-specID="' || p_spc_id  
+                        || '" data-refTypeID="' || p_ref_type_id 
                         || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                         || '" data-label="' || p_title || '"' 
                         || case when p_read_only_ind = 1 then ' disabled ' end 
@@ -376,6 +383,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                         || case when p_mandatory_ind = 1 then ' mandatoryItem' else '' end 
                         || case when p_item_id is not null then '" id="'|| p_item_id end 
                         || '" data-specID="' || p_spc_id  
+                        || '" data-refTypeID="' || p_ref_type_id 
                         || case when p_ref_id is not null then '" data-refID="' || p_ref_id end
                         || '" data-label="' || p_title || '" '
                         || case when p_read_only_ind = 1 then ' disabled ' end  

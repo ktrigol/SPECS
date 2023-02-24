@@ -92,6 +92,7 @@ create or replace PACKAGE "SPC_DISPLAY_HANDLER" AS
         @ p_class           NULL            Indicates the class of the item
         @ p_item_id         NULL            Indicates the id of the item
         @ p_ref_id          NULL            Indicates the id of the reference
+        @ p_ref_type_id     NULL            Indicates the id of the reference type
         @ p_lang            NULL            Language in which the specificites will be shown  
     -------------------------------------------------------------------------
     */ 
@@ -110,6 +111,7 @@ create or replace PACKAGE "SPC_DISPLAY_HANDLER" AS
                           , p_class             in varchar2 default null
                           , p_item_id           in varchar2 default null
                           , p_ref_id            in number default null
+                          , p_ref_type_id       in number default null
                           , p_lang              in varchar2
     ) return clob;
 

@@ -39,15 +39,15 @@ create or replace PACKAGE BODY "SPC_MANIPULATION_HANDLER" AS
         l_page_id := apex_util.get_session_state('APP_PAGE_ID');
         -- Merge the data from the collection to the spc_data table
         MERGE INTO spc_data t1
-        USING (SELECT c001 spc_id, c002 spc_value, c003 ref_id
+        USING (SELECT c001 spc_id, c002 spc_value, c003 ref_id, c004 ref_type_id
                FROM apex_collections 
                WHERE collection_name = 'SPC_DT_'||l_app_id||'P?='||l_page_id) t2
         ON (t1.spc_id = t2.spc_id and nvl(t1.ref_id, -1) = nvl(t2.ref_id,-1)) 
         WHEN MATCHED THEN
         UPDATE SET t1.value = t2.spc_value
         WHEN NOT MATCHED THEN
-        INSERT (spc_id, ref_id, value)
-        VALUES (t2.spc_id, t2.ref_id, t2.spc_value); 
+        INSERT (spc_id, ref_id, ref_type_id, value)
+        VALUES (t2.spc_id, t2.ref_id, t2.ref_type_id, t2.spc_value); 
         --? INC_UTILS_API.get_val_spec_genere(col.id_spc,col.spc_value)
         
     exception

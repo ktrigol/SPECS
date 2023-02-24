@@ -687,7 +687,8 @@ procedure demo_send_mail (
 ) as
    l_subject   varchar2(100);
    l_body_html clob;
-   l_message   varchar2(4000);
+   --l_message   varchar2(4000);
+   l_emails    varchar2(4000);
    l_out_statut varchar2(20);
    l_out_message varchar2(4000);
 begin
@@ -695,7 +696,9 @@ begin
    if p_role_id is not null and p_role_id != -1 then
 
       -- TODO : get all users email in this role
-      select listagg(u.first_name || ' ' || u.last_name || ' (' || u.email_address || ')', '<br/>') within group(order by first_name, last_name) into l_message
+      select 
+         --listagg(u.first_name || ' ' || u.last_name || ' (' || u.email_address || ')', '<br/>') within group(order by first_name, last_name) into l_message
+         listagg(u.email_address, ';') within group(order by 1) into l_emails
       from flw_role r
       join flw_role_user ru
         on ru.role_id = r.id
@@ -705,12 +708,15 @@ begin
 
    elsif p_user_id is not null and p_user_id != -1 then
 
-      select first_name || ' ' || last_name || ' (' || email_address || ')' into l_message
+      select 
+         --first_name || ' ' || last_name || ' (' || email_address || ')' into l_message
+         email_address into l_emails
       from flw_user
       where id = p_user_id;
 
    elsif p_other_mail is not null then
-      l_message := p_other_mail;
+      --l_message := p_other_mail;
+      l_emails := p_other_mail;
    end if;
 
    -- execute only if we have an email
@@ -734,7 +740,7 @@ begin
 
     flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
                                     , p_ref_id      => p_process_id
-                                    , p_to          => null
+                                    , p_to          => l_emails
                                     , p_cc          => null
                                     , p_bcc         => null
                                     , p_replyto     => null
