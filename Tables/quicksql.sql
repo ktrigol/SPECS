@@ -110,6 +110,7 @@ flw_process /auditcols
     id num /pk -- primary key
     flw_type_id num /fk flw_type(id) /nn -- references the flow type ID in flw_type table
     current_flw_step_id num /fk flw_type_step(id) /nn -- step on which the process is actually, references the step ID in flw_type_step table
+    status vc50 /nn /default 'IN-PROGRESS' -- flow status
     description vc400
     --current_step num /nn -- step on which the process is actually
     -- champ statique ? A VOIR
