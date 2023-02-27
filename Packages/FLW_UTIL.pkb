@@ -77,14 +77,20 @@ create or replace package body flw_util -- authid definer
    l_current_step   number;
    l_nb_step_cmp    number;
    l_flow_type_id   number;
+   l_flw_status     flw_process.status%type;
    begin
-    -- check if request was completed or cancled
-
     -- get flow type id for this process
-    select flw_type_id 
-    into   l_flow_type_id
+    select flw_type_id , status
+    into   l_flow_type_id , l_flw_status
     from   flw_process 
     where  id = p_flow_id;
+
+    -- check if request was completed or cancled
+    if l_flw_status = 'COMPLETED' then 
+        return 100;
+    elsif l_flw_status = 'CANCELLED' then 
+        return 0;
+    end if;
 
     -- get the total number of the steps for this flow type
     select count(1)
