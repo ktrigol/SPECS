@@ -215,6 +215,7 @@ create or replace PACKAGE BODY "FLW_NOTIF_TOOL" AS
         );
     exception 
           when others then 
+            flw_util.log('An error occured');
             out_error := 'ERROR';
             out_error_msg := sqlerrm;
               --raise_application_error(-20001,dbms_utility.format_error_backtrace);*/

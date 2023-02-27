@@ -692,12 +692,14 @@ procedure demo_send_mail (
    p_user_id      in flw_user.id%type,
    p_other_mail   in varchar2
 ) as
-   l_subject   varchar2(100);
-   l_body_html clob;
+   l_subject      varchar2(100);
+   l_body_html    clob;
+   l_intern_id    demo_stagiaire.id%type;
+
    --l_message   varchar2(4000);
-   l_emails    varchar2(4000);
-   l_out_statut varchar2(20);
-   l_out_message varchar2(4000);
+   l_emails       varchar2(4000);
+   l_out_statut   varchar2(20);
+   l_out_message  varchar2(4000);
 begin
 
    if p_role_id is not null and p_role_id != -1 then
@@ -745,21 +747,32 @@ begin
       , p_replyto   => null
     );*/
 
-    flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
-                                    , p_ref_id      => p_process_id
-                                    , p_to          => l_emails
-                                    , p_cc          => null
-                                    , p_bcc         => null
-                                    , p_replyto     => null
-                                    , p_subject     => null
-                                    --, p_attachments => 
-                                    , p_immediate   => true
-                                    , p_lang        => null --flw_util.get_language_id()
-                                    , out_error     => l_out_statut
-                                    , out_error_msg => l_out_message
-    );
+   --> look up for intern id
+   begin
 
-    apex_mail.push_queue;
+      select id into l_intern_id
+      from demo_stagiaire
+      where flw_process_id = p_process_id;
+
+   exception when no_data_found then
+      raise_application_error(-20000, 'Intern not found');
+   end;
+
+   flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
+                                 , p_ref_id      => l_intern_id
+                                 , p_to          => l_emails
+                                 , p_cc          => null
+                                 , p_bcc         => null
+                                 , p_replyto     => null
+                                 , p_subject     => null
+                                 --, p_attachments => 
+                                 , p_immediate   => true
+                                 , p_lang        => null --flw_util.get_language_id()
+                                 , out_error     => l_out_statut
+                                 , out_error_msg => l_out_message
+   );
+
+   apex_mail.push_queue;
    
    if l_out_statut = 'ERROR' then
       raise_application_error(-20000, l_out_message);
