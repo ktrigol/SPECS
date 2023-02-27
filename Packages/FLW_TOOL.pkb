@@ -748,7 +748,7 @@ begin
     );*/
 
    --> look up for intern id
-   begin
+   /*begin
 
       select id into l_intern_id
       from demo_stagiaire
@@ -756,10 +756,10 @@ begin
 
    exception when no_data_found then
       raise_application_error(-20000, 'Intern not found');
-   end;
+   end;*/
 
    flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
-                                 , p_ref_id      => l_intern_id
+                                 , p_ref_id      => p_process_id
                                  , p_to          => l_emails
                                  , p_cc          => null
                                  , p_bcc         => null
