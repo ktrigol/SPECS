@@ -572,6 +572,7 @@ begin
         return;
     end if;
 
+
     -------------------------------------
     -- update to next step if any
     ------------------------------------
@@ -579,11 +580,18 @@ begin
         update flw_process
           set current_flw_step_id = l_flw_type_step_option.next_step_id
         where id = p_flw_process_id;
+    end if;
+
+    -- check if next options are available  
+    select count(*) into l_dummy
+    from flw_type_step_option
+    where flw_type_step_id = l_flw_type_step_option.next_step_id;
+
     -------------------------------------
     -- flow process is completed
     ------------------------------------
-    else
-       update flw_process
+    if l_dummy = 0 then
+      update flw_process
           set status = 'COMPLETED'
         where id = p_flw_process_id;
     end if;
