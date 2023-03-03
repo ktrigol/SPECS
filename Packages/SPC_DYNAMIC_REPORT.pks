@@ -62,7 +62,7 @@ create or replace PACKAGE "SPC_DYNAMIC_REPORT" AS
     function get_description_lang ( p_report_id     in spc_report.id%type
                                   , p_value         in varchar2 -- REPORT_NAME or DETAIL
                                   , p_lang          in spc_lang.lang_code%type default null
-      ) return varchar2;
+    ) return varchar2;
       
     /************************************************************************
     ------------------------------------------------------------------------- 
@@ -76,6 +76,57 @@ create or replace PACKAGE "SPC_DYNAMIC_REPORT" AS
 
     function get_label_name_lang ( p_detail_id     in spc_report.id%type
                                   , p_lang          in spc_lang.lang_code%type default null
-      ) return varchar2;
+    ) return varchar2;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Returns the columns position for the group by
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    function get_col_pos_group_by(p_report_id      in spc_report.id%type
+    ) return number;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Returns the columns position for the order by
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    function column_count( p_report_id      in spc_report_detail.id%type
+    ) return number;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Return the columns query for the collection 
+    Return: text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+        @ p_seq           NOT NULL        Sequence number of the column
+    -------------------------------------------------------------------------
+    */
+
+    function get_column_query_coll( p_report_id            in spc_report.id%type
+                                  , p_seq                  in number
+                                  --, p_ind_valeur_reference in number
+    )return varchar2;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Function to get the query for the collection
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    function get_query_collection( p_report_id         in spc_report.id%type
+    ) return clob;
 
 END SPC_DYNAMIC_REPORT;

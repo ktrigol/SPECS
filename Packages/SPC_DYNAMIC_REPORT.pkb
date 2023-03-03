@@ -186,12 +186,329 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
     exception 
         when no_data_found then
             -- log error
-            return 'No description found for this label in this language';
+            return null;
         when others then 
             -- log error
             return 'One error has occured: '||sqlerrm;
     end get_label_name_lang;
 
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Returns the columns position for the group by
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
 
+    function get_col_pos_group_by(p_report_id      in spc_report.id%type
+    ) return number 
+    as 
+        l_position  number;
+    begin
+        -- Get the columns for the group by
+        select colunm_position into l_position
+        from
+        (        
+            select rownum as colunm_position
+                 , seq_no as seq_no
+            from spc_report_detail
+            where report_id = p_report_id
+            and active_ind = 1
+            and display_ind = 1
+            and group_by_ind = 1
+            order by seq_no asc
+        )
+        --where group_by_ind = 1
+        --and rownum = 1;
+        fetch first 1 row only;
+
+        -- Return the position
+        return l_position;
+    exception when no_data_found then
+        return null;
+    end get_col_pos_group_by;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Returns the columns position for the order by
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    function column_count( p_report_id      in spc_report_detail.id%type
+    ) return number
+    as 
+        l_count number;
+    begin
+        
+        select count(*) 
+        into l_count
+        from spc_report_detail
+        where report_id = p_report_id
+        and   active_ind = 1
+        and   display_ind = 1;
+        
+        return l_count;
+    exception 
+        when others then 
+            -- log error
+            return 0;
+    end column_count;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Return the columns query for the collection 
+    Return: text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+        @ p_seq           NOT NULL        Sequence number of the column
+    -------------------------------------------------------------------------
+    */
+
+    function get_column_query_coll( p_report_id            in spc_report.id%type
+                                  , p_seq                  in number
+                                  --, p_ind_valeur_reference in number
+    )return varchar2 
+    as
+        l_result          varchar2(4000);
+        l_rec_detail      spc_report_detail%rowtype;
+        l_fiel_type       varchar2(50);
+    begin
+
+        -- get the column detail of the report
+        select  *
+        into    l_rec_detail
+        from    spc_report_detail
+        where   report_id  = p_report_id
+        and     seq_no = p_seq;
+        
+        /*--> CONTRAT
+        if p_type = 'CONTRAT' then
+            l_prefixe_table := 'c.';
+        --> REQUETE
+        elsif p_type = 'REQUETE' then
+            l_prefixe_table := 'r.';
+        --> CONCESSION
+        elsif p_type = 'CONCESSION' then
+            l_prefixe_table := 'conc.';
+        end if;*/
+            
+        -- Name of the column
+        if l_rec_detail.spc_ind = 0 then
+            
+            l_result := l_rec_detail.column_value;
+            --> cherche la valeur dans les références
+            /*if   l_rec_detail.ind_colonne_contact = 1 then         
+                l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
+                                                p_id_spec => '''||l_rec_detail.valeur || '''
+                                                ,p_type => ''CONTRAT''' ||
+                                            '   ,p_id_contrat_req => ' || l_prefixe_table || 'id ' || --c
+                                            '   ,p_ind_colonne_contact => 1)';
+            elsif   l_rec_detail.ind_colonne_contact = 2 then         
+                l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
+                                                p_id_spec => '||l_rec_detail.valeur || '
+                                                ,p_type => ''CONTRAT''' ||
+                                            '   ,p_id_contrat_req => ' || l_prefixe_table || 'id ' || --c
+                                            '   ,p_ind_colonne_contact => 1)';
+            elsif p_ind_valeur_reference = 1 then
+                l_result := 
+                            'nvl(inc_utils_api.get_ref_valeur(p_id => ' || l_prefixe_table || l_rec_detail.valeur || '),' || l_prefixe_table || l_rec_detail.valeur || ')' ;
+            else
+                -- else 'c.' || l_rec_detail.valeur ;
+                l_result := l_prefixe_table || l_rec_detail.valeur;
+            end if;*/
+        
+        -- Column is a specificity 
+        else
+            -- Get the value of the specificity
+            l_result := 
+                'spc_tool.get_value_spc( p_spc_id    =>  '||l_rec_detail.column_value ||
+                '                      , p_ref_id    =>  id )';
+            /*if p_type = 'CONTRAT' and l_rec_detail.valeur is not null then
+                begin
+                    select
+                        t1.type_champs into l_type_champs
+                    from inc_specificites t1
+                    where t1.id_spec = to_number(l_rec_detail.valeur);
+                    
+                exception when others then
+                    null;
+                end;
+            elsif p_type = 'REQUETE' and l_rec_detail.valeur is not null then
+                begin
+                    select
+                        t1.type_champs into l_type_champs
+                    from inc_requete_specificites t1
+                    where t1.id = to_number(l_rec_detail.valeur);
+                    
+                exception when others then
+                    null;
+                end;
+                
+            end if;*/
+            
+            /*l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
+                                                    p_id_spec           => '||l_rec_detail.valeur || 
+                                                '  ,p_type              => ''' || p_type || '''' ||
+                                                '  ,p_id_contrat_req    => ' || l_prefixe_table || 'id )';
+                                                
+            if l_type_champs = 'DATE' then
+                l_result := 'to_date(' || l_result || ', ''DD-MM-YYYY'')';
+            --elsif l_type_champs = 'HOUR' then
+            --    l_result := 'to_date(' || l_result || ', ''HH24:MI'')';
+            end if;
+            */
+        end if;
+        
+        return l_result;
+    end get_column_query_coll;
+    
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Function to get the query for the collection
+    Return: Text
+    Parameters:
+        @ p_report_id     NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    function get_query_collection( p_report_id         in spc_report.id%type
+    ) return clob 
+    as
+        l_query                  clob;
+        --l_type_rapport           varchar2(50);
+        --l_id_contrat_categorie   number;
+        --l_id_type_requete        number;
+        l_ref_type_id            number;
+        l_table_name             spc_ref_type.table_name%type;
+        l_order_by               varchar2(2000);
+        l_where                  varchar2(2000);
+        l_col                    varchar2(2000);
+        --l_nb_col                 number := 0;
+        l_col_nb                number := 0;
+        --l_col_contrat_trouve     boolean := false;
+        --l_col_requete_trouve     boolean := false;
+        --l_col_concession_trouve  boolean := false;
+        --l_date_format            varchar2(50) := nvl(APEX_UTIL.get_session_state('G_DATE_FORMAT'), 'YYYY-MM-DD');
+    begin
+        -- Recupérer le type de rapport (Contrat ou Requete)
+        /*select  type_rapport, id_contrat_categorie, id_type_requete
+        into    l_type_rapport, l_id_contrat_categorie, l_id_type_requete
+        from    inc_rapport_configurable
+        where   id = p_id;*/
+
+        -- Get the reference type id
+        select t2.table_name, t1.ref_type_id
+        into l_table_name, l_ref_type_id
+        from spc_report t1
+        join spc_ref_type t2
+        on t1.ref_type_id = t2.id
+        where t1.id = p_report_id;
+
+        -- Create the query for the columns
+        for c1 in (
+            select
+                t1.id,
+                t1.report_id,
+                t1.column_value,
+                t1.seq_no,
+                t1.group_by_ind,
+                t1.order_by_ind,
+                --t1.value_ref_com,            
+                t1.operator_comp,
+                --trim(t2.comparaison_valeur) comparaison_valeur,
+                t1.display_ind
+            from
+                spc_report_detail t1
+            where t1.report_id = p_report_id
+            and   t1.active_ind = 1
+            order by t1.seq_no asc
+        ) loop
+            l_col_nb := l_col_nb + 1;
+            /*l_col := get_colonne_sql_coll( p_ind_contrat_requete    => c1.ind_contrat_requete--?
+                                        ,p_type                   => c1.type_rapport
+                                        ,p_id_rapport             => c1.id_rapport
+                                        ,p_seq                    => c1.sequence_colonne
+                                        ,p_ind_valeur_reference   => c1.ind_valeur_reference);*/
+            l_col := get_column_query_coll( p_report_id   => p_report_id
+                                          , p_seq         => c1.seq_no);
+
+            -- Concatenate the columns
+            if c1.display_ind = 1 then
+                l_query := l_query || ',' || l_col; 
+            end if;
+            
+            -- Concatenate the where clause
+            -- partie configuration filtre de la colonne
+            -- Column filter 
+            /*case c1.comparaison_operateur 
+            --0 : est nul, 1 : pas nul, 2 : égal à, 3 : comme, 4 : différent
+                when 0 then
+                    l_where := l_where || ' and ' || l_col || ' is null';
+                when 1 then
+                    l_where := l_where || ' and ' || l_col || ' is not null';
+                when 2 then
+                    l_where := l_where || ' and to_char(' || l_col || ') = ''' || c1.comparaison_valeur || '''';
+                when 3 then
+                    l_where := l_where || ' and to_char(' || l_col || ') like ''%' || c1.comparaison_valeur || '%''';
+                when 4 then
+                    l_where := l_where || ' and (to_char(' || l_col || ') not like ''%' || c1.comparaison_valeur || '%'' 
+                                                    or ' || l_col || ' is null)';
+                else
+                    null;
+            end case;*/
+            
+            -- Concatenate the order by clause
+            if c1.order_by_ind = 1 then 
+                l_order_by := l_order_by || ',' || l_col_nb || ' asc';
+            elsif c1.order_by_ind = 2 then
+                l_order_by := l_order_by || ',' || l_col_nb || ' desc';
+            end if;
+            
+            /*if c1.type_rapport = 'CONTRAT' and not l_col_contrat_trouve then
+                l_col_contrat_trouve := true;
+            end if;
+            
+            if c1.type_rapport = 'REQUETE' and not l_col_requete_trouve then
+                l_col_requete_trouve := true;
+            end if;
+            
+            if c1.type_rapport = 'CONCESSION' and not l_col_concession_trouve then
+                l_col_concession_trouve := true;
+            end if;*/
+            
+            
+        end loop;
+        
+        -- Delete additional "," and ' and '
+        l_query := ltrim(l_query, ',');    
+        l_where       := ltrim(l_where, ' and ');
+        l_order_by    := ltrim(l_order_by, ',');
+
+        if l_query is not null then
+        
+            -- Select from table
+            l_query := 'select ' || l_query || ' from ' || l_table_name || ' t1  '; 
+                    
+            -- Add the where clause
+            if l_where is not null then 
+                l_query := l_query || ' and (' || l_where || ')'; 
+            end if;
+            
+            -- Add the order by clause
+            if l_order_by is not null then 
+                l_query := l_query || ' order by ' || l_order_by;
+            end if;
+        else
+            --return 'select 1 as col1, 2 as col2 from dual';
+            l_query := 'select 1 from dual where 1 = 2';
+        end if;
+        
+        return l_query;
+        
+    end get_query_collection;
 
 END SPC_DYNAMIC_REPORT;
