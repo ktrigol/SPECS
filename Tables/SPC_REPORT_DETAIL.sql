@@ -14,8 +14,8 @@ DROP TABLE "SPC_REPORT_DETAIL";
                                    , "DISPLAY_IND" NUMBER DEFAULT 1 
                                    , "OPERATOR_COMP" NUMBER
                                    , "OPERATOR_COMP_VALUE" VARCHAR2(250) COLLATE "USING_NLS_COMP"
-                                   --, "VALUE_REF_IND"  NUMBER
-                                   --, "VALUE_REF_VALUE" VARCHAR2(250) COLLATE "USING_NLS_COMP"
+                                   , "VALUE_REF_IND"  NUMBER DEFAULT 0
+                                   , "VALUE_REF" VARCHAR2(500) COLLATE "USING_NLS_COMP"
                                    , "CREATED" DATE
                                    , "CREATED_BY" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                    , "MODIFIED" DATE
@@ -34,8 +34,8 @@ DROP TABLE "SPC_REPORT_DETAIL";
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."DISPLAY_IND" IS 'Indicate if the column is displayed or not';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."OPERATOR_COMP" IS 'Operator of comparison';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."OPERATOR_COMP_VALUE" IS 'Value for the comparison';
-   --COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_IND" IS 'Indicate if the column is a reference or not';
-   --COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_VALUE" IS 'Column name with the value to display of the reference';
+   COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_IND" IS 'Indicate if the column is a reference or not';
+   COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF" IS 'Table name, referenced column name and displayed column name with the value to display of the reference ex: EMP:EMP_ID:EMP_NAME';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."CREATED" IS 'Creation date';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."CREATED_BY" IS 'Creation user';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."MODIFIED" IS 'Modification date';
