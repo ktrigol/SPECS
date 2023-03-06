@@ -13,7 +13,9 @@ DROP TABLE "SPC_REPORT_DETAIL";
                                    , "GROUP_BY_IND" NUMBER DEFAULT 0
                                    , "DISPLAY_IND" NUMBER DEFAULT 1 
                                    , "OPERATOR_COMP" NUMBER
-                                   , "VALUE_REF_COMP" VARCHAR2(100) COLLATE "USING_NLS_COMP"
+                                   , "OPERATOR_COMP_VALUE" VARCHAR2(250) COLLATE "USING_NLS_COMP"
+                                   --, "VALUE_REF_IND"  NUMBER
+                                   --, "VALUE_REF_VALUE" VARCHAR2(250) COLLATE "USING_NLS_COMP"
                                    , "CREATED" DATE
                                    , "CREATED_BY" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                    , "MODIFIED" DATE
@@ -31,7 +33,9 @@ DROP TABLE "SPC_REPORT_DETAIL";
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."GROUP_BY_IND" IS 'Indicate if the column is grouped or not';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."DISPLAY_IND" IS 'Indicate if the column is displayed or not';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."OPERATOR_COMP" IS 'Operator of comparison';
-   COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_COMP" IS 'Column name of comparison';
+   COMMENT ON COLUMN "SPC_REPORT_DETAIL"."OPERATOR_COMP_VALUE" IS 'Value for the comparison';
+   --COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_IND" IS 'Indicate if the column is a reference or not';
+   --COMMENT ON COLUMN "SPC_REPORT_DETAIL"."VALUE_REF_VALUE" IS 'Column name with the value to display of the reference';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."CREATED" IS 'Creation date';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."CREATED_BY" IS 'Creation user';
    COMMENT ON COLUMN "SPC_REPORT_DETAIL"."MODIFIED" IS 'Modification date';
@@ -104,7 +108,7 @@ ALTER TRIGGER "SPC_REPORT_DETAIL_BIU" ENABLE;
   ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK3" CHECK (ORDER_BY_IND in (0, 1, 2)) ENABLE;
   ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK4" CHECK (GROUP_BY_IND in (0, 1)) ENABLE;
   ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK5" CHECK (DISPLAY_IND in (0, 1)) ENABLE;
-  ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK6" CHECK (OPERATOR_COMP in (0, 1, 2, 3, 4)) ENABLE;
+  ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK6" CHECK (OPERATOR_COMP in (0, 1, 2, 3, 4, 5, 6)) ENABLE;
   ALTER TABLE "SPC_REPORT_DETAIL" ADD CONSTRAINT "SPC_REPORT_DETAIL_CHK7" CHECK (VALUE_REF_COMP in (0, 1)) ENABLE;
 
 --------------------------------------------------------

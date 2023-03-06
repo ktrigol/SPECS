@@ -168,21 +168,36 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
                                   , p_lang          in spc_lang.lang_code%type default null
       ) return varchar2
     is
-      l_return spc_report_detail_lang.label_name%type;
+      l_return varchar2(4000);--spc_report_detail_lang.label_name%type;
+      l_spc_ind spc_report_detail.spc_ind%type;
     begin
-        -- Get the report name or detail in the given language
-        select label_name
-        into l_return
-        from spc_report_detail_lang t1
-        join spc_lang t2
-        on t1.report_lang_id = t2.id
-        where (t2.lang_code = p_lang
-                or p_lang is null
-                and t2.default_lang_ind = 1)
-        and   t1.report_detail_id = p_detail_id;
+        begin
+            -- Get the report name or detail in the given language
+            select label_name
+            into l_return
+            from spc_report_detail_lang t1
+            join spc_lang t2
+            on t1.report_lang_id = t2.id
+            where (t2.lang_code = p_lang
+                    or p_lang is null
+                    and t2.default_lang_ind = 1)
+            and   t1.report_detail_id = p_detail_id;
 
-        return l_return;
-
+            return l_return;
+        exception
+          when no_data_found then
+            -- Return the name of the spec or the name of the column formated 
+            select case t1.spc_ind  
+                    when 1 then spc_tool.get_description_lang ( p_spc_id  => t1.column_value
+                                                              , p_lang    => p_lang
+                                                              )
+                    else initcap(replace(column_value,'_',' '))
+                    end
+            into l_return
+            from spc_report_detail t1
+            where t1.id = p_detail_id;
+            return l_return;
+        end;
     exception 
         when no_data_found then
             -- log error
@@ -208,18 +223,23 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
     begin
         -- Get the columns for the group by
         select colunm_position into l_position
-        from
-        (        
-            select rownum as colunm_position
-                 , seq_no as seq_no
-            from spc_report_detail
-            where report_id = p_report_id
-            and active_ind = 1
-            and display_ind = 1
-            and group_by_ind = 1
-            order by seq_no asc
+        from (
+            select rownum as colunm_position, --colunm_position-- 
+                seq_no, group_by_ind
+            from
+            (      
+                select --rownum as colunm_position
+                    seq_no as seq_no
+                    , group_by_ind
+                from spc_report_detail
+                where report_id = 6
+                and active_ind = 1
+                and display_ind = 1
+                --and group_by_ind = 1
+                order by seq_no asc
+            )
         )
-        --where group_by_ind = 1
+        where group_by_ind = 1
         --and rownum = 1;
         fetch first 1 row only;
 
@@ -284,42 +304,11 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
         from    spc_report_detail
         where   report_id  = p_report_id
         and     seq_no = p_seq;
-        
-        /*--> CONTRAT
-        if p_type = 'CONTRAT' then
-            l_prefixe_table := 'c.';
-        --> REQUETE
-        elsif p_type = 'REQUETE' then
-            l_prefixe_table := 'r.';
-        --> CONCESSION
-        elsif p_type = 'CONCESSION' then
-            l_prefixe_table := 'conc.';
-        end if;*/
-            
+
         -- Name of the column
         if l_rec_detail.spc_ind = 0 then
             
             l_result := l_rec_detail.column_value;
-            --> cherche la valeur dans les références
-            /*if   l_rec_detail.ind_colonne_contact = 1 then         
-                l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
-                                                p_id_spec => '''||l_rec_detail.valeur || '''
-                                                ,p_type => ''CONTRAT''' ||
-                                            '   ,p_id_contrat_req => ' || l_prefixe_table || 'id ' || --c
-                                            '   ,p_ind_colonne_contact => 1)';
-            elsif   l_rec_detail.ind_colonne_contact = 2 then         
-                l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
-                                                p_id_spec => '||l_rec_detail.valeur || '
-                                                ,p_type => ''CONTRAT''' ||
-                                            '   ,p_id_contrat_req => ' || l_prefixe_table || 'id ' || --c
-                                            '   ,p_ind_colonne_contact => 1)';
-            elsif p_ind_valeur_reference = 1 then
-                l_result := 
-                            'nvl(inc_utils_api.get_ref_valeur(p_id => ' || l_prefixe_table || l_rec_detail.valeur || '),' || l_prefixe_table || l_rec_detail.valeur || ')' ;
-            else
-                -- else 'c.' || l_rec_detail.valeur ;
-                l_result := l_prefixe_table || l_rec_detail.valeur;
-            end if;*/
         
         -- Column is a specificity 
         else
@@ -327,40 +316,7 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             l_result := 
                 'spc_tool.get_value_spc( p_spc_id    =>  '||l_rec_detail.column_value ||
                 '                      , p_ref_id    =>  id )';
-            /*if p_type = 'CONTRAT' and l_rec_detail.valeur is not null then
-                begin
-                    select
-                        t1.type_champs into l_type_champs
-                    from inc_specificites t1
-                    where t1.id_spec = to_number(l_rec_detail.valeur);
-                    
-                exception when others then
-                    null;
-                end;
-            elsif p_type = 'REQUETE' and l_rec_detail.valeur is not null then
-                begin
-                    select
-                        t1.type_champs into l_type_champs
-                    from inc_requete_specificites t1
-                    where t1.id = to_number(l_rec_detail.valeur);
-                    
-                exception when others then
-                    null;
-                end;
-                
-            end if;*/
             
-            /*l_result := 'INC_RAPPORT_DYNAMIQUE.get_valeur_spec( 
-                                                    p_id_spec           => '||l_rec_detail.valeur || 
-                                                '  ,p_type              => ''' || p_type || '''' ||
-                                                '  ,p_id_contrat_req    => ' || l_prefixe_table || 'id )';
-                                                
-            if l_type_champs = 'DATE' then
-                l_result := 'to_date(' || l_result || ', ''DD-MM-YYYY'')';
-            --elsif l_type_champs = 'HOUR' then
-            --    l_result := 'to_date(' || l_result || ', ''HH24:MI'')';
-            end if;
-            */
         end if;
         
         return l_result;
@@ -379,26 +335,13 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
     ) return clob 
     as
         l_query                  clob;
-        --l_type_rapport           varchar2(50);
-        --l_id_contrat_categorie   number;
-        --l_id_type_requete        number;
         l_ref_type_id            number;
         l_table_name             spc_ref_type.table_name%type;
         l_order_by               varchar2(2000);
         l_where                  varchar2(2000);
         l_col                    varchar2(2000);
-        --l_nb_col                 number := 0;
-        l_col_nb                number := 0;
-        --l_col_contrat_trouve     boolean := false;
-        --l_col_requete_trouve     boolean := false;
-        --l_col_concession_trouve  boolean := false;
-        --l_date_format            varchar2(50) := nvl(APEX_UTIL.get_session_state('G_DATE_FORMAT'), 'YYYY-MM-DD');
+        l_col_nb                 number := 0;
     begin
-        -- Recupérer le type de rapport (Contrat ou Requete)
-        /*select  type_rapport, id_contrat_categorie, id_type_requete
-        into    l_type_rapport, l_id_contrat_categorie, l_id_type_requete
-        from    inc_rapport_configurable
-        where   id = p_id;*/
 
         -- Get the reference type id
         select t2.table_name, t1.ref_type_id
@@ -419,7 +362,7 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
                 t1.order_by_ind,
                 --t1.value_ref_com,            
                 t1.operator_comp,
-                --trim(t2.comparaison_valeur) comparaison_valeur,
+                trim(t1.operator_comp_value) operator_comp_value,
                 t1.display_ind
             from
                 spc_report_detail t1
@@ -428,13 +371,10 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             order by t1.seq_no asc
         ) loop
             l_col_nb := l_col_nb + 1;
-            /*l_col := get_colonne_sql_coll( p_ind_contrat_requete    => c1.ind_contrat_requete--?
-                                        ,p_type                   => c1.type_rapport
-                                        ,p_id_rapport             => c1.id_rapport
-                                        ,p_seq                    => c1.sequence_colonne
-                                        ,p_ind_valeur_reference   => c1.ind_valeur_reference);*/
             l_col := get_column_query_coll( p_report_id   => p_report_id
-                                          , p_seq         => c1.seq_no);
+                                          , p_seq         => c1.seq_no
+                                          --,p_ind_valeur_reference   => c1.ind_valeur_reference
+                                          );
 
             -- Concatenate the columns
             if c1.display_ind = 1 then
@@ -442,24 +382,25 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             end if;
             
             -- Concatenate the where clause
-            -- partie configuration filtre de la colonne
             -- Column filter 
-            /*case c1.comparaison_operateur 
-            --0 : est nul, 1 : pas nul, 2 : égal à, 3 : comme, 4 : différent
-                when 0 then
-                    l_where := l_where || ' and ' || l_col || ' is null';
+            case c1.operator_comp 
+            -- 0: is null, 1: is not null, 2: equal , 3: not equal, 4: like 5: not like
                 when 1 then
-                    l_where := l_where || ' and ' || l_col || ' is not null';
+                    l_where := l_where || ' and ' || l_col || ' is null';
                 when 2 then
-                    l_where := l_where || ' and to_char(' || l_col || ') = ''' || c1.comparaison_valeur || '''';
+                    l_where := l_where || ' and ' || l_col || ' is not null';
                 when 3 then
-                    l_where := l_where || ' and to_char(' || l_col || ') like ''%' || c1.comparaison_valeur || '%''';
-                when 4 then
-                    l_where := l_where || ' and (to_char(' || l_col || ') not like ''%' || c1.comparaison_valeur || '%'' 
+                    l_where := l_where || ' and to_char(' || l_col || ') = ''' || c1.operator_comp_value || '''';
+                when 4 then 
+                    l_where := l_where || ' and to_char(' || l_col || ') != ''' || c1.operator_comp_value || '''';
+                when 5 then
+                    l_where := l_where || ' and upper(to_char(' || l_col || ')) like upper(''%' || c1.operator_comp_value || '%'')';
+                when 6 then
+                    l_where := l_where || ' and (upper(to_char(' || l_col || ')) not like upper(''%' || c1.operator_comp_value || '%'') 
                                                     or ' || l_col || ' is null)';
                 else
                     null;
-            end case;*/
+            end case;
             
             -- Concatenate the order by clause
             if c1.order_by_ind = 1 then 
@@ -467,20 +408,7 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             elsif c1.order_by_ind = 2 then
                 l_order_by := l_order_by || ',' || l_col_nb || ' desc';
             end if;
-            
-            /*if c1.type_rapport = 'CONTRAT' and not l_col_contrat_trouve then
-                l_col_contrat_trouve := true;
-            end if;
-            
-            if c1.type_rapport = 'REQUETE' and not l_col_requete_trouve then
-                l_col_requete_trouve := true;
-            end if;
-            
-            if c1.type_rapport = 'CONCESSION' and not l_col_concession_trouve then
-                l_col_concession_trouve := true;
-            end if;*/
-            
-            
+
         end loop;
         
         -- Delete additional "," and ' and '
@@ -495,7 +423,7 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
                     
             -- Add the where clause
             if l_where is not null then 
-                l_query := l_query || ' and (' || l_where || ')'; 
+                l_query := l_query || ' where (' || l_where || ')'; 
             end if;
             
             -- Add the order by clause
