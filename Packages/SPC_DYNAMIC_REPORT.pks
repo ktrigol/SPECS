@@ -80,6 +80,19 @@ create or replace PACKAGE "SPC_DYNAMIC_REPORT" AS
 
     /************************************************************************
     -------------------------------------------------------------------------
+    Procedure Description: initialize the collection of the report
+    Parameters:
+        @ p_collection_name     NOT NULL        Name of the collection
+        @ p_report_id           NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    procedure init_coll_dynamic_report( p_collection_name in varchar2
+                                      , p_report_id       in spc_report.id%type
+    );
+
+    /************************************************************************
+    -------------------------------------------------------------------------
     Function Description: Returns the columns position for the group by
     Return: Text
     Parameters:

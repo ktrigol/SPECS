@@ -209,6 +209,41 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
 
     /************************************************************************
     -------------------------------------------------------------------------
+    Procedure Description: initialize the collection of the report
+    Parameters:
+        @ p_collection_name     NOT NULL        Name of the collection
+        @ p_report_id           NOT NULL        ID of the report
+    -------------------------------------------------------------------------
+    */
+
+    procedure init_coll_dynamic_report( p_collection_name in varchar2
+                                      , p_report_id       in spc_report.id%type
+    )
+    is 
+    begin
+        if apex_collection.collection_exists(p_collection_name) then
+            apex_collection.delete_collection(p_collection_name);
+        end if; 
+
+        -- Create the collection on page load
+        begin 
+            APEX_COLLECTION.CREATE_COLLECTION_FROM_QUERY (
+                p_collection_name      =>    p_collection_name ,
+                p_query                =>    spc_dynamic_report.get_query_collection( p_report_id => p_report_id)
+            );
+        exception
+            when others then
+                APEX_COLLECTION.CREATE_OR_TRUNCATE_COLLECTION  (p_collection_name => p_collection_name );
+                APEX_COLLECTION.ADD_MEMBER(
+                    p_collection_name => p_collection_name,
+                    p_c001            => 'One error ocurred creating the dynamic report',
+                    p_c002            => sqlerrm
+                    );
+        end;
+    end;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
     Function Description: Returns the columns position for the group by
     Return: Text
     Parameters:
@@ -290,12 +325,12 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
 
     function get_column_query_coll( p_report_id            in spc_report.id%type
                                   , p_seq                  in number
-                                  --, p_ind_valeur_reference in number
     )return varchar2 
     as
         l_result          varchar2(4000);
         l_rec_detail      spc_report_detail%rowtype;
         l_fiel_type       varchar2(50);
+        l_vc_arr2         apex_t_varchar2;
     begin
 
         -- get the column detail of the report
@@ -307,9 +342,12 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
 
         -- Name of the column
         if l_rec_detail.spc_ind = 0 then
-            
-            l_result := l_rec_detail.column_value;
-        
+            if l_rec_detail.value_ref_ind = 1 then
+                l_vc_arr2 := apex_string.split(l_rec_detail.value_ref,':'); -- 1: table_name 2: reference column 3: display column
+                l_result := '(select listagg('||l_vc_arr2(3)||','', '') within group(order by '||l_vc_arr2(3)||') from '||l_vc_arr2(1)||' where '||l_vc_arr2(2)||' = t1.'||l_rec_detail.column_value||')';
+            else 
+                l_result := l_rec_detail.column_value;
+            end if;
         -- Column is a specificity 
         else
             -- Get the value of the specificity
@@ -373,7 +411,6 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             l_col_nb := l_col_nb + 1;
             l_col := get_column_query_coll( p_report_id   => p_report_id
                                           , p_seq         => c1.seq_no
-                                          --,p_ind_valeur_reference   => c1.ind_valeur_reference
                                           );
 
             -- Concatenate the columns
