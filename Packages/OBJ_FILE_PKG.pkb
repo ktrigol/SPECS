@@ -64,6 +64,7 @@ create or replace PACKAGE BODY "OBJ_FILE_PKG" AS
                  '     , FILE_NAME '||
                  '     , FILE_SIZE '||
                  '     , sys.dbms_lob.getlength("OBJECT") as OBJECT' ||
+                 '     , sys.dbms_lob.getlength("OBJECT") as IMAGE' ||
                  '     , sys.dbms_lob.getlength("OBJECT") as PREVIEW' ||
                  '     , MIME_TYPE '||
                 ' from OBJ_FILE '|| 
