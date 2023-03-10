@@ -275,4 +275,17 @@ create or replace package flw_tool -- authid definer
       p_other_mail   in varchar2
    );   
 
+   -----------------------------------------------------------------------------------
+   /* create flow process procedure : used to create a flow process in a defined step
+      @p_flw_type_id : flow type ID
+      @p_step : flow Step position
+      @p_description : flow description
+   */
+   -----------------------------------------------------------------------------------
+   function create_flow_process (
+      p_flw_type_id      in flw_process.flw_type_id%type,
+      p_step             in flw_process.current_flw_step_id%type,
+      p_description      in flw_process.description%type
+   ) return number;   
+
 end flw_tool;
