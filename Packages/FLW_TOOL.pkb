@@ -615,7 +615,8 @@ begin
           and t1.flw_type_step_option_id = l_flw_type_step_option.id
     ) loop
 
-        --insum_debug.log_error('c1.code_plsql => ' || c1.code_plsql );
+      
+      --insum_debug.log_error('c1.code_plsql => ' || c1.code_plsql );
 
         -- check if required parameters are passed
         if c1.nb_params > 1 then
@@ -629,41 +630,47 @@ begin
                 raise_application_error(-20001, 'Missing action parameters');
             end if;
         end if;
+       
+           
+      if c1.code_action in ('SEND_EMAIL', 'SEND_SMS') then
+           -- convert parameter list in array
+         if c1.type != 'NORMAL' then
+               l_params_array := apex_string.split(p_str => c1.spc_id, p_sep => ':');
+         else
 
-        -- convert parameter list in array
-        if c1.type != 'NORMAL' then
-            l_params_array := apex_string.split(p_str => c1.spc_id, p_sep => ':');
-        else
+               if c1.code_action = 'SEND_SMS' then
+                  l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1), p_sep => ':');
+               elsif c1.code_action = 'SEND_MAIL' then
+                  l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1) || ':' || c1.action_parameters, p_sep => ':');
+               else
+                  l_params_array := apex_string.split(p_str => c1.action_parameters, p_sep => ':');
+               end if;
+         end if;
 
-            if c1.code_action = 'SEND_SMS' then
-                l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1), p_sep => ':');
-            elsif c1.code_action = 'SEND_MAIL' then
-                l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1) || ':' || c1.action_parameters, p_sep => ':');
-            else
-                l_params_array := apex_string.split(p_str => c1.action_parameters, p_sep => ':');
-            end if;
-        end if;
+         -- first parameter is alwasy the ID of the flow process, it is automaticaly replaced
+         l_code_plsql := c1.code_plsql;
+         l_code_plsql := replace(l_code_plsql, ':PARAM1', p_flw_process_id);
 
-        -- first parameter is alwasy the ID of the flow process, it is automaticaly replaced
-        l_code_plsql := c1.code_plsql;
-        l_code_plsql := replace(l_code_plsql, ':PARAM1', p_flw_process_id);
+         -- on remplace les autres paramètres
+         for i in 1..l_params_array.count loop
+               l_code_plsql := replace(l_code_plsql, ':PARAM' || (i+1), '''' || rtrim(ltrim(l_params_array(i), ''''), '''') || '''');
+         end loop;
 
-        -- on remplace les autres paramètres
-        for i in 1..l_params_array.count loop
-            l_code_plsql := replace(l_code_plsql, ':PARAM' || (i+1), '''' || rtrim(ltrim(l_params_array(i), ''''), '''') || '''');
-        end loop;
+         -- execute dynamique code
+         l_code_plsql := 'begin ' || rtrim(l_code_plsql, ';') || '; end;';
 
-        -- execute dynamique code
-        l_code_plsql := 'begin ' || rtrim(l_code_plsql, ';') || '; end;';
+         -- TODO : insum_debug.log_error(l_code_plsql);
 
-        -- TODO : insum_debug.log_error(l_code_plsql);
-
-        -- error handling : will be displayed in case of error
-        begin
-            execute immediate l_code_plsql;
-        exception when others then
-            l_additional_info := l_additional_info || '- "' || c1.description || '"<br/>' ;
-        end ;
+         -- error handling : will be displayed in case of error
+         begin
+               execute immediate l_code_plsql;
+         exception when others then
+               l_additional_info := l_additional_info || '- "' || c1.description || '"<br/>' ;
+         end ;
+         -- TODO : move functionality below to a function and call it from here
+      elsif c1.code_action in ('TRIG_FLOW') then
+         -- TODO : create funcionality to create a new flow process in the step
+      end if;
 
     end loop;
 
