@@ -150,8 +150,8 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 where t1.active_ind = 1  
                 and   t1.app_id = p_app_id 
                 and   nvl(t1.page_id,p_page_id) = p_page_id
-                and   (nvl(t2.ref_type_id, -1) = nvl(p_ref_type_id , -1)
-                     and nvl(t2.ref_id,-1) = nvl(p_ref_id,-1))
+                and   ((t1.ref_type_id = p_ref_type_id or t1.ref_type_id is null) --(nvl(t2.ref_type_id, -1) = nvl(p_ref_type_id , -1)
+                     and t2.ref_id = p_ref_id)
                 union 
                select t1.id as spc_id 
                     , t1.field_type 
@@ -178,6 +178,7 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
                 on   t1.format_id = t3.id
                 where t1.active_ind = 1  
                 and   t1.app_id = p_app_id 
+                and   (t1.ref_type_id = p_ref_type_id or t1.ref_type_id is null) 
                 and   nvl(t1.page_id,p_page_id) = p_page_id 
                 and    not exists ( 
                     select 1  
@@ -404,4 +405,4 @@ create or replace PACKAGE BODY SPC_DISPLAY_HANDLER AS
         return l_return; 
     end gen_item_html; 
      
-END SPC_DISPLAY_HANDLER; 
+END SPC_DISPLAY_HANDLER;

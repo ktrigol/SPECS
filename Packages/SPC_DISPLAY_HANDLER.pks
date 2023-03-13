@@ -65,7 +65,7 @@ create or replace PACKAGE "SPC_DISPLAY_HANDLER" AS
     ------------------------------------------------------------------------- 
     */ 
     procedure init_spc( p_app_id      in number 
-                      , p_page_id     in number 
+                      , p_page_id     in number
                       , p_ref_type_id in number 
                       , p_ref_id      in number
                       , p_exc_ids     in varchar2 
