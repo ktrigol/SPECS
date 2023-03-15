@@ -4,7 +4,7 @@ as
     -- nom de la collection et ca doit etre le meme nom dans la vue v_releves_det_collection 
     gc_coll_name          constant varchar2(30) := 'COLL_NAME' ; 
     ------------------------------------------------------------------------------*/ 
-    procedure generer_script_rapport(p_code_rapport in varchar2); 
+    /*procedure generer_script_rapport(p_code_rapport in varchar2); */
     procedure inserer_blob_dans_collection(p_filename       in varchar2, 
                                             p_mime_type     in varchar2, 
                                             p_blob_content  in blob, 

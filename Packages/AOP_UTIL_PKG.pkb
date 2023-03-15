@@ -1,7 +1,7 @@
 create or replace PACKAGE BODY "AOP_UTIL_PKG" 
 as  
     g_collection_name varchar2(25) := 'TEMP_BLOB_CONTENT';  
-    procedure generer_script_rapport(p_code_rapport in varchar2)  
+    /*procedure generer_script_rapport(p_code_rapport in varchar2)  
     is  
         l_chunk_size     constant number (4) := 100;  
         l_blob_inhex     clob;  
@@ -14,9 +14,9 @@ as
       dbms_output.put_line('l_blob_ang blob;');  
       dbms_output.put_line('l_count number;');  
       dbms_output.put_line('begin');  
-      for x in(  
+      for x in( */ 
         /* ------------------------SELECT FROM YOUR TABLE HERE------------------------ */  
-        select  
+        /*select  
         nom_rapport_fra,  
         nom_rapport_ang,  
         rapport_type,  
@@ -70,9 +70,9 @@ as
           dbms_output.put_line('dbms_lob.append(l_blob_ang, hextoraw(''' || l_text_chunk || '''));');  
         end loop;  
         dbms_output.put_line('select count(*) into l_count from cnd_config_rapports where code_rapport = ''' || p_code_rapport || ''';');  
-        dbms_output.put_line('if l_count = 0 then');  
+        dbms_output.put_line('if l_count = 0 then');  */
         /*------------------------ MODIFY THIS INSERT STATEMENT AS NEEDED SO THIS CAN PRODUCE YOUR SCRIPT ------------------------*/  
-        dbms_output.put_line('insert into cnd_config_rapports (');  
+        /*dbms_output.put_line('insert into cnd_config_rapports (');  
         dbms_output.put_line(' code_rapport,');  
         dbms_output.put_line(' nom_rapport_fra,');  
         dbms_output.put_line(' nom_rapport_ang,');  
@@ -165,7 +165,8 @@ as
       dbms_output.put_line('commit;');  
       dbms_output.put_line('end;');  
       dbms_output.put_line('/');  
-    end generer_script_rapport;  
+    end generer_script_rapport; */
+
     procedure inserer_blob_dans_collection( p_filename      in varchar2,  
                                             p_mime_type     in varchar2,  
                                             p_blob_content  in blob,  
@@ -255,9 +256,9 @@ as
         l_error_message varchar2(4000);  
     begin  
       if sqlcode = -20000 then  
-        l_error_message := 'Problème avec serveur AOP.';  
+        l_error_message := 'Error with AOP Server.';  
       else  
-        l_error_message := 'Erreur lors de la génération du rapport. Vérifiez la configuration du rapport.';  
+        l_error_message := 'Error during report generation, please verify your configuration.';  
       end if;  
         return l_error_message;  
     end;  
