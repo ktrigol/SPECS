@@ -27,6 +27,7 @@ create or replace package body flw_util -- authid definer
   | Date        | Who                | What                          |
   *------------------------------------------------------------------*
    2023-02-14   Henrick Maury        XXXXXXXXXXXXX
+   2023-03-14   Kael Trigo           If language id is no found in session state, get the default language id from spc_lang
   *------------------------------------------------------------------*
 
 */ is
@@ -37,8 +38,19 @@ create or replace package body flw_util -- authid definer
    */
    function get_language_id return number
    as
+      l_lang_id number;
    begin 
-      return to_number(apex_util.get_session_state('AI_LANGUAGE_ID'));
+      -- get language id from session state
+      l_lang_id := to_number(apex_util.get_session_state('AI_LANGUAGE_ID'));
+
+      -- if not found, get language id from user preferences
+      if l_lang_id is null then
+         select id into l_lang_id from spc_lang where default_lang_ind = 1
+         fetch first 1 row only;
+      end if;
+      
+      -- return language id
+      return l_lang_id;
    end get_language_id;
 
    /*
