@@ -1,35 +1,35 @@
 create or replace package body flw_tool -- authid definer
 /*
    Copyright 2023 Insum Solutions
-
+ 
    Author: Henrick Maury
-
-
+ 
+ 
    Overview:
-
+ 
    Implement flow mecanism to handle dynamic states or steps for a process.
-
+ 
    Requirements
-
+ 
    * APEX is installed (apex_debug is available)
-
+ 
    * Package is executed from within an APEX application
-
+ 
    If APEX is not installed go to apex.oracle.com for instructions.
-
+ 
    If you do not have a workspace created, have your DBA run this code to
    create a single workspace named "insum_debug" to be used with this utility.
-
+ 
    <provide code example to use workspace API>
-
+ 
    Modification History
    Date       Who                  What
    ---------- -------------------- ---------------------------------
    2023-02-08 Henrick Maury        XXXXXXXXXXXXX
-
+ 
 */ is
-
-
+ 
+ 
 /* get all columns for one specific row from table flw_type_step
     @p_flw_type_step_id : flow type step ID
     @returns : flow type step row
@@ -43,13 +43,13 @@ begin
     select * into l_flw_type_step
     from flw_type_step_v
     where id = p_flw_type_step_id;
-
+ 
     return l_flw_type_step;
-
+ 
 exception when no_data_found then
     return null;
 end;
-
+ 
 /* get all columns for one specific row from table flw_type_step_option
     @p_flw_type_step_option_id : flow type step option ID
     @returns : flow type step option row
@@ -58,17 +58,17 @@ function get_flw_type_step_option(p_flw_type_step_option_id in flw_type_step_opt
    return flw_type_step_option_v%rowtype as
     l_flw_type_step_option flw_type_step_option_v%rowtype;
 begin
-
+ 
     select * into l_flw_type_step_option
     from flw_type_step_option_v
     where id = p_flw_type_step_option_id;
-
+ 
     return l_flw_type_step_option;
-
+ 
 exception when no_data_found then
     return null;
 end get_flw_type_step_option;
-
+ 
 /* build flow step description with status, note
     @p_flw_type_step_id : flow type step ID
     @p_include_options_yn : include option description : button name
@@ -79,26 +79,26 @@ function get_flw_type_step_desc(
     p_include_options_yn in varchar2 default 'N'
 )
 return varchar2 as
-
+ 
     l_description flw_type_step_v.status%type;
 begin
-
+ 
     select
         --s.step_number || ' = ' || s.status || ' ' || s.note as d
         s.status  as d
     into l_description
     from flw_type_step_v s
     where s.id = p_flw_type_step_id;
-
+ 
     return l_description;
-
+ 
 exception when no_data_found then
     return null;
 end get_flw_type_step_desc;
-
-
-
-
+ 
+ 
+ 
+ 
 /* 
    create flow definition
    @p_priority : priority between flows
@@ -125,22 +125,22 @@ begin
       select nvl(max(priority), 0) + 1 into l_next_priority
       from flw_type;
    end if;
-
+ 
    --> insert row
    insert into flw_type(priority, ind_active, spc_ref_type_id, spc_group_id)
    values(l_next_priority, p_ind_active, p_spc_ref_type_id, p_spc_group_id)
    returning id into p_out_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end create_flow_type;
-
-
-
+ 
+ 
+ 
 /* 
    edit flow definition
    @p_id : flow type ID
@@ -161,7 +161,7 @@ procedure update_flow_type (
    p_out_message        out varchar2
 ) as
 begin
-
+ 
    --> insert row
    update flw_type
    set priority = p_priority, 
@@ -169,15 +169,15 @@ begin
        spc_ref_type_id = p_spc_ref_type_id,
        spc_group_id = p_spc_group_id
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end update_flow_type;
-
+ 
 /*  --TODO : and all steps inside if not already used
    delete flow definition
    @p_id : flow type ID
@@ -190,30 +190,30 @@ procedure delete_flow_type (
    p_out_message        out varchar2
 ) as
 begin
-
+ 
    --> validations
    if p_id is null then
       p_out_status := 'ERROR';
       p_out_message := 'Invalid parameters';
    end if;
-
+ 
    --> delete language
    delete from flw_type_lang
    where flw_type_id = p_id;
-
+ 
    --> delete row
    delete from flw_type
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end delete_flow_type;
-
-
+ 
+ 
 /* 
    @p_flw_type_id : flow type step ID
    @p_display_spc_ids : specificities to display at this step
@@ -232,31 +232,31 @@ procedure create_flow_step (
 ) as
    l_next_step_number   flw_type_step.step_number%type;
 begin
-
+ 
    --> validations
    if p_flw_type_id is null then
       p_out_status := 'ERROR';
       p_out_message := 'Invalid parameters';
    end if;
-
+ 
    --> get next step number
    select nvl(max(step_number), 0) + 1 into l_next_step_number
    from flw_type_step
    where flw_type_id = p_flw_type_id;
-
+ 
    --> insert row
    insert into flw_type_step(flw_type_id, display_spc_ids, note, step_number)
    values(p_flw_type_id, p_display_spc_ids, p_note, l_next_step_number)
    returning id into p_out_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end create_flow_step;
-
+ 
 /* 
    edit flow step
    @p_id : flow type step ID
@@ -273,27 +273,27 @@ procedure update_flow_step (
    p_out_message        out varchar2
 ) as
 begin   
-
+ 
    --> validations
    if p_id is null then
       p_out_status := 'ERROR';
       p_out_message := 'Invalid parameters';
    end if;
-
+ 
    --> update row
    update flw_type_step
       set display_spc_ids = p_display_spc_ids, 
           note = p_note
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end update_flow_step;
-
+ 
 /*
    delete flow step if not already used
    @p_id : flow type step ID
@@ -311,25 +311,25 @@ begin
       p_out_status := 'ERROR';
       p_out_message := 'Invalid parameters';
    end if;
-
+ 
    --> delete language
    delete from flw_type_step_lang
    where flw_type_step_id = p_id;
-
+ 
    --> delete row
    delete from flw_type_step
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end delete_flow_step;
-
-
-
+ 
+ 
+ 
 /* create a new option in table flw_type_step_option
    @p_flw_type_step_id : step ID
    @p_next_step_id : next step ID
@@ -357,20 +357,20 @@ begin
    select nvl(max(display_seq), 0) + 1 into l_next_display_seq
    from flw_type_step_option
    where flw_type_step_id = p_flw_type_step_id;
-
+ 
    --> insert row
    insert into flw_type_step_option(flw_type_step_id, next_step_id, role_ids, mandatory_spc_ids, readonly_spc_ids, display_seq, css_button)
    values(p_flw_type_step_id, p_next_step_id, p_role_ids, p_mandatory_spc_ids, p_readonly_spc_ids, l_next_display_seq, p_css_button)
    returning id into p_out_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end create_flow_step_option;
-
+ 
 /* update an existing option in table flw_type_step_option
    @p_id : option ID
    @p_next_step_id : next step ID
@@ -399,16 +399,16 @@ begin
             readonly_spc_ids = p_readonly_spc_ids,
             css_button = p_css_button
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end update_flow_step_option;
-
-
+ 
+ 
 /* delete option from table flw_type_step_option
    @p_id : option ID
    @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
@@ -420,42 +420,42 @@ procedure delete_flow_step_option (
    p_out_message              out varchar2
 ) as
 begin
-
+ 
    --> validations
    if p_id is null then
       p_out_status := 'ERROR';
       p_out_message := 'Invalid parameters';
    end if;
-
+ 
    --> clean history
    delete from flw_history
    where flw_type_step_option_id = p_id;
-
+ 
    --> delete language
    delete from flw_type_step_option_lang
    where flw_type_step_option_id = p_id;
-
+ 
    --> delete row
    delete from flw_type_step_option
    where id = p_id;
-
+ 
    p_out_status := 'SUCCESS';
-
+ 
 exception when others then
    p_out_status := 'ERROR';
    p_out_message := 'An error occured ' || sqlerrm;
    flw_util.log('An error occured');
 end delete_flow_step_option;
-
-
-
-
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 -----------------------------------------------------------------------------------
 -- log l'opération effectuée sur une requête
 -----------------------------------------------------------------------------------
@@ -469,11 +469,11 @@ procedure log_process_history (
     out_message                 out varchar2
 ) as
 begin
-
+ 
     --> next sequence
     --select nvl(max(id), 0) + 1 into p_out_id
     --from flw_history;
-
+ 
     --> create log
     insert into flw_history (
         flw_process_id,
@@ -490,15 +490,15 @@ begin
         v('APP_USER'),
         sysdate
     ) returning id into p_out_id;
-
+ 
     out_status := 'SUCCESS';
 exception when others then
     out_status := 'ERROR';
     out_message := 'Une erreur est survenue ' || sqlerrm;
     --insum_debug.log_error('An error occured ' || sqlerrm );
 end log_process_history;
-
-
+ 
+ 
 -----------------------------------------------------------------------------------
 /* trigger action defined on this step and move flow to the next step
 @p_flw_process_id : flow ID
@@ -523,23 +523,24 @@ procedure move_flow_to_step(
     l_code_plsql            flw_action.code_plsql%type;
     l_flw_type_step         flw_type_step_v%rowtype;
     l_flw_type_step_option  flw_type_step_option_v%rowtype;
-
+ 
     -- audit
     l_executed_date         flw_history.executed_date%type := sysdate;
     l_action_name           flw_history.action_name%type;
-
+ 
     -- history
     l_flow_history_id flw_history.id%type;
-
+ 
     -- for out parameters
     l_additional_info       clob;
     l_status                varchar2(50);
     l_message               varchar2(4000);
-
+ 
     -- Action
     l_flw_process_id        flw_process.id%type;
+    l_flw_parent_desc       flw_process.description%type;
 begin
-
+ 
     -- required paramters
     if p_flw_process_id is null then
         p_out_status := 'ERROR';
@@ -547,20 +548,20 @@ begin
         return;
         --raise_application_error(-20001, 'Missing parameter : p_flw_process_id');
     end if;
-
+ 
     if p_flw_type_step_option_id is null then
         p_out_status := 'ERROR';
         p_out_message := 'Missing parameter : p_flw_type_step_option_id';
         return;
     end if;
-
+ 
     -- TODO : add validation
         -- next step must be the next step of the current step
-
+ 
     -- get step details
     l_flw_type_step_option := flw_tool.get_flw_type_step_option(p_flw_type_step_option_id => p_flw_type_step_option_id);
     l_flw_type_step := flw_tool.get_flw_type_step(p_flw_type_step_id => l_flw_type_step_option.flw_type_step_id);
-
+ 
     ---------------------------
     --> create history
     ---------------------------
@@ -578,9 +579,25 @@ begin
         p_out_message := l_message;
         -- TODO : insum_debug
         return;
+    /*else 
+         -------------------------------------
+         --> insert into flw_history_det
+         -------------------------------------
+         flw_tool.log_history_det(
+            p_flow_process_id => p_flw_process_id,
+            out_status        => l_status,
+            out_message       => l_message
+         );
+
+         if l_status is null or l_status != 'SUCCESS' then
+            p_out_status := 'ERROR';
+            p_out_message := l_message;
+            -- TODO : insum_debug
+            return;
+         end if;*/
     end if;
-
-
+ 
+ 
     -------------------------------------
     -- update to next step if any
     ------------------------------------
@@ -589,12 +606,12 @@ begin
           set current_flw_step_id = l_flw_type_step_option.next_step_id
         where id = p_flw_process_id;
     end if;
-
+ 
     -- check if next options are available  
     select count(*) into l_dummy
     from flw_type_step_option
     where flw_type_step_id = l_flw_type_step_option.next_step_id;
-
+ 
     -------------------------------------
     -- flow process is completed
     ------------------------------------
@@ -625,14 +642,14 @@ begin
           and t2.code_plsql is not null
           and t1.flw_type_step_option_id = l_flw_type_step_option.id
     ) loop
-
+ 
       
       --insum_debug.log_error('c1.code_plsql => ' || c1.code_plsql );
         
        
            
       if c1.code_action in ('SEND_EMAIL', 'SEND_SMS') then
-
+ 
         -- check if required parameters are passed
         if c1.nb_params > 1 then
             -- function that will set a value to specificity
@@ -643,12 +660,12 @@ begin
                 raise_application_error(-20001, 'Missing action parameters');
             end if;
         end if;
-
+ 
          -- convert parameter list in array
          if c1.type != 'NORMAL' then
                l_params_array := apex_string.split(p_str => c1.spc_id, p_sep => ':');
          else
-
+ 
                if c1.code_action = 'SEND_SMS' then
                   l_params_array := apex_string.split(p_str => nvl(c1.role_id, -1) || ':' || nvl(c1.user_id, -1), p_sep => ':');
                elsif c1.code_action = 'SEND_MAIL' then
@@ -657,21 +674,21 @@ begin
                   l_params_array := apex_string.split(p_str => c1.action_parameters, p_sep => ':');
                end if;
          end if;
-
+ 
          -- first parameter is alwasy the ID of the flow process, it is automaticaly replaced
          l_code_plsql := c1.code_plsql;
          l_code_plsql := replace(l_code_plsql, ':PARAM1', p_flw_process_id);
-
+ 
          -- on remplace les autres paramètres
          for i in 1..l_params_array.count loop
                l_code_plsql := replace(l_code_plsql, ':PARAM' || (i+1), '''' || rtrim(ltrim(l_params_array(i), ''''), '''') || '''');
          end loop;
-
+ 
          -- execute dynamique code
          l_code_plsql := 'begin ' || rtrim(l_code_plsql, ';') || '; end;';
-
+ 
          -- TODO : insum_debug.log_error(l_code_plsql);
-
+ 
          -- error handling : will be displayed in case of error
          begin
                execute immediate l_code_plsql;
@@ -680,12 +697,20 @@ begin
          end ;
          -- TODO : move functionality below to a function and call it from here
       elsif c1.code_action in ('TRIG_FLOW') then
+         -- Get the parent flow description 
+         select description 
+         into l_flw_parent_desc
+         from flw_process
+         where id = p_flw_process_id;
+ 
          -- create a new flow process in the step
          l_flw_process_id := create_flow_process (p_flw_type_id      => c1.trg_flw_type_id,
                                                   p_step             => c1.trg_flw_step_id,
-                                                  p_description      => 'Generated by another flow.'
+                                                  p_step_option_id   => l_flw_type_step_option.id,
+                                                  p_description      => 'Generated by another flow.',
+                                                  p_note             => l_flw_parent_desc
                                                );
-
+ 
          -- sync data between the two flows specificities
          flw_tool.flow_action_sync_spcs (
             p_step_action_id        => c1.flw_type_step_action_id,
@@ -693,36 +718,36 @@ begin
             p_flw_process_id_target => l_flw_process_id
          );
       end if;
-
+ 
     end loop;
-
+ 
     --:P34_MESSAGE := inb_message_api.get_message('CREATE_SUCCESS') || :P34_MESSAGE;
     if l_additional_info is not null then
-
+ 
         -- build error message
         --:P34_MESSAGE_ERREUR := 'Fonction(s) qui ont échoué : <br/>' || l_additional_info;
         p_out_message := 'Failed Function(s) : <br/>' || l_additional_info;
     end if;
-
+ 
     --------------------------
     -- save error in log
     --------------------------
     if l_additional_info is not null then
-
+ 
         update flw_history
           set note = 'Errors(s) ' || l_additional_info
         where id = l_flow_history_id;
     end if;
-
-
+ 
+ 
     p_out_status := 'SUCCESS';
 exception when others then
     p_out_status := 'ERROR';
     p_out_message := 'An error occured ' || sqlerrm;
     --TODO : insum_debug.log_error();
 end move_flow_to_step;
-
-
+ 
+ 
 procedure demo_send_mail (
    p_process_id   in flw_process.id%type,
    p_role_id      in flw_role.id%type,
@@ -732,15 +757,15 @@ procedure demo_send_mail (
    l_subject      varchar2(100);
    l_body_html    clob;
    l_intern_id    demo_stagiaire.id%type;
-
+ 
    --l_message   varchar2(4000);
    l_emails       varchar2(4000);
    l_out_statut   varchar2(20);
    l_out_message  varchar2(4000);
 begin
-
+ 
    if p_role_id is not null and p_role_id != -1 then
-
+ 
       -- TODO : get all users email in this role
       select 
          --listagg(u.first_name || ' ' || u.last_name || ' (' || u.email_address || ')', '<br/>') within group(order by first_name, last_name) into l_message
@@ -751,25 +776,25 @@ begin
       join flw_user u
         on ru.user_id = u.id
       where r.id = p_role_id;
-
+ 
    elsif p_user_id is not null and p_user_id != -1 then
-
+ 
       select 
          --first_name || ' ' || last_name || ' (' || email_address || ')' into l_message
          email_address into l_emails
       from flw_user
       where id = p_user_id;
-
+ 
    elsif p_other_mail is not null then
       --l_message := p_other_mail;
       l_emails := p_other_mail;
    end if;
-
+ 
    -- execute only if we have an email
    /*if l_message is not null then
       flw_util.log(p_message => 'Sending email to ' || l_message);
    end if;*/
-
+ 
    /*
    --TODO : send real email
    l_body_html := 'Test';
@@ -783,18 +808,18 @@ begin
       , p_bcc       => null
       , p_replyto   => null
     );*/
-
+ 
    --> look up for intern id
    /*begin
-
+ 
       select id into l_intern_id
       from demo_stagiaire
       where flw_process_id = p_process_id;
-
+ 
    exception when no_data_found then
       raise_application_error(-20000, 'Intern not found');
    end;*/
-
+ 
    flw_notif_tool.send_notification( p_notif_code  => 'FLOW_ACTION_TEMPLATE'
                                  , p_ref_id      => p_process_id
                                  , p_to          => l_emails
@@ -808,35 +833,43 @@ begin
                                  , out_error     => l_out_statut
                                  , out_error_msg => l_out_message
    );
-
+ 
    apex_mail.push_queue;
    
    if l_out_statut = 'ERROR' then
       raise_application_error(-20000, l_out_message);
    end if;
-
+ 
 end demo_send_mail;
-
+ 
 -----------------------------------------------------------------------------------
    /* create flow process procedure : used to create a flow process in a defined step
       @p_flw_type_id : flow type ID
       @p_step : flow Step position
       @p_description : flow description
+      @p_note : flow history note (Why the flow was created)
    */
    -----------------------------------------------------------------------------------
    function create_flow_process (
       p_flw_type_id      in flw_process.flw_type_id%type,
       p_step             in flw_process.current_flw_step_id%type,
-      p_description      in flw_process.description%type
+      p_step_option_id   in flw_history.flw_type_step_option_id%type,
+      p_description      in flw_process.description%type,
+      p_note             in flw_history.note%type default null
    ) return number as
     l_id_flow_process number;
    begin
-    insert into flw_process(FLW_TYPE_ID, CURRENT_FLW_STEP_ID, DESCRIPTION)
+      -- create new flow process
+      insert into flw_process(FLW_TYPE_ID, CURRENT_FLW_STEP_ID, DESCRIPTION)
           values(p_flw_type_id, p_step,p_description)
         returning id into l_id_flow_process; 
+ 
+      -- create new flow history
+      insert into flw_history(FLW_PROCESS_ID, FLW_TYPE_STEP_OPTION_ID, ACTION_NAME, NOTE, EXECUTED_BY, EXECUTED_DATE)
+          values(l_id_flow_process, p_step_option_id, 'Flow Automatic Creation', p_note, v('APP_USER'), sysdate);
    return l_id_flow_process;
    end create_flow_process; 
-
+ 
    -----------------------------------------------------------------------------------
    /* sync spcs process procedure : used to sync spcs values on a flow creation
       @p_step_action_id : flow step action ID
@@ -852,42 +885,120 @@ end demo_send_mail;
       -- Variables
       l_flw_type_id_source     flw_process.flw_type_id%type;
       l_flw_type_id_target     flw_process.flw_type_id%type;
+      l_flw_history_id_target  flw_history.id%type;
+      l_value                  spc_data.value%type;
+ 
       -- Cursor to the sync configuration
       cursor c_sync_config(p_step_action_id        in flw_type_step_action.id%type) is 
       select *
       from flw_step_action_spc_sync
       where step_action_id = p_step_action_id;
-
+ 
    begin
-
-      -- Get the flow type id for the source and target
+ 
+      -- Get the flow type id for the source
       select t2.spc_ref_type_id
       into l_flw_type_id_source
       from flw_process t1
       join flw_type t2
       on t1.flw_type_id = t2.id
       where t1.id = p_flw_process_id_source;
-
+ 
+      -- Get the flow type id for the target
       select t2.spc_ref_type_id
       into l_flw_type_id_target
       from flw_process t1
       join flw_type t2
       on t1.flw_type_id = t2.id
       where t1.id = p_flw_process_id_target;
-
+ 
+      -- Get the flw_history id for the target 
+      select t1.id
+      into l_flw_history_id_target
+      from flw_history t1
+      where t1.flw_process_id = p_flw_process_id_target;
+ 
       -- Loop on the sync configuration
       for r_sync_config in c_sync_config(p_step_action_id) loop
-
-         -- return the value and insert for the new flow process
-         insert into spc_data (spc_id, ref_type_id, ref_id, value)
-         select r_sync_config.target_spc_id, l_flw_type_id_target, p_flw_process_id_target, value 
-         from spc_data 
+ 
+         -- Get the value for the source flow process
+         select value
+         into l_value
+         from spc_data
          where spc_id = r_sync_config.source_spc_id 
          and ref_type_id = l_flw_type_id_source
          and ref_id = p_flw_process_id_source;
-
+ 
+ 
+         -- return the value and insert for the new flow process
+         insert into spc_data (spc_id, ref_type_id, ref_id, value)
+            values (r_sync_config.target_spc_id, l_flw_type_id_target, p_flw_process_id_target, l_value);
+         /*select r_sync_config.target_spc_id, l_flw_type_id_target, p_flw_process_id_target, value 
+         from spc_data 
+         where spc_id = r_sync_config.source_spc_id 
+         and ref_type_id = l_flw_type_id_source
+         and ref_id = p_flw_process_id_source;*/
+ 
+         -- Insert the history
+         insert into flw_history_det (flw_history_id, value_after, spc_id)
+            values (l_flw_history_id_target, l_value, r_sync_config.target_spc_id);
+ 
       end loop;
-
+ 
    end flow_action_sync_spcs;   
 
+   -----------------------------------------------------------------------------------
+   /* set flow history det process procedure : used to insert the history details for a flow
+      @p_flow_process_id : flow process ID
+      @out_status : out status
+      @out_message : out message
+   */
+   -----------------------------------------------------------------------------------
+   procedure log_history_det (
+      p_flow_process_id       in flw_process.id%type,
+      out_status                  out varchar2,
+      out_message                 out varchar2
+   )as   
+      -- Variables
+      l_app_id          number;
+      l_page_id         number;
+      l_flw_history_id  number;
+   begin
+
+      -- Get the application and page id
+      l_app_id := apex_util.get_session_state('APP_ID');
+      l_page_id := apex_util.get_session_state('APP_PAGE_ID');
+
+      -- Get the last record in flw_history for the process
+      select max(id)
+      into l_flw_history_id
+      from flw_history
+      where flw_process_id = p_flow_process_id; 
+
+      -- Insert the history details
+      insert into flw_history_det (flw_history_id, value_before, value_after, spc_id)
+         --values (l_flw_history_id_target, l_value, r_sync_config.target_spc_id);
+      select l_flw_history_id
+           , spc_tool.format_spc_value ( p_filed_type => (select field_type from spc_definition where id = t1.c001)
+                              , p_value      => t2.value
+                              , p_lang       => v('AI_LANGUAGE_CODE')) as value
+           , spc_tool.format_spc_value ( p_filed_type => (select field_type from spc_definition where id = t1.c001)
+                              , p_value      => t1.c002
+                              , p_lang       => v('AI_LANGUAGE_CODE')) as spc_value
+           , t1.c001 as spc_id
+      from apex_collections t1
+      left join spc_data t2
+      on t2.spc_id = t1.c001
+      and nvl(t2.ref_type_id, -1) = nvl(t1.c004, -1)
+      and nvl(t2.ref_id, -1) = nvl(t1.c003, -1)
+      where t1.collection_name = 'SPC_DT_'||l_app_id||'P?='||l_page_id;
+
+      out_status := 'SUCCESS';
+   exception 
+      when others then
+         out_status := 'ERROR';
+         out_message := 'Une erreur est survenue ' || sqlerrm;
+   end log_history_det;
+   
+ 
 end flw_tool;
