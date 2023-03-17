@@ -124,4 +124,18 @@ create or replace PACKAGE "SPC_TOOL" AS
                           , p_lang       in spc_lang.lang_code%type default null
                           , p_format     in varchar2 default 'Y') 
     return varchar2;
+
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the value formated for a given specificity
+    Parameters: 
+        @ p_filed_type NOT NULL       Type of the specificity
+        @ p_value      NOT NULL       Value of the specificity
+        @ p_lang       NULL           Code of the language
+    -------------------------------------------------------------------------
+    */
+    function format_spc_value ( p_filed_type in spc_definition.field_type%type
+                              , p_value      in spc_data.value%type
+                              , p_lang       in spc_lang.lang_code%type default null) 
+    return varchar2;
 END SPC_TOOL;

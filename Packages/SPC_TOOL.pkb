@@ -239,8 +239,8 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
 
     begin
       -- Get the type of the specificity   
-      select t1.field_type, /*t1.list_group, t1.list_code,*/ t2.value, t1.format_id
-      into l_field_type, /*l_list_group, l_list_code,*/ l_value, l_format_id
+      select t1.field_type, t2.value, t1.format_id
+      into l_field_type, l_value, l_format_id
       from spc_definition t1
       join spc_data t2
       on t1.id = t2.spc_id
@@ -254,51 +254,10 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
       
       -- in case of format Y, format the value
       if p_format = 'Y' then 
-          -- depending on the type of the specificity, different formatting
-          if l_field_type = 'DATE' then
-              begin
-                  if l_value is not null then
-                      -- get the format of the date
-                      begin
-                        select format
-                        into l_format
-                        from spc_format 
-                        where class = 'date-format';
-                      exception
-                        when no_data_found then
-                          l_format := 'DD-MM-YYYY';
-                      end;
-                      -- format the date
-                      l_value := to_char(to_date(l_value, 'DD-MM-YYYY'), l_format);
-                  end if;
-              exception
-                  when others then return null;
-              end;
-          elsif l_field_type = 'HOUR' then
-              begin
-                  if l_value is not null then
-                      -- get the format of the hour
-                      begin
-                        select format
-                        into l_format
-                        from spc_format 
-                        where class = 'hour-format';
-                      exception
-                        when no_data_found then
-                          l_format := 'HH24:MI';
-                      end;
-                      -- format the hour
-                      l_value := to_char(to_date(l_value, 'HH24:MI'), l_format);
-                  end if;
-              exception
-                  when others then null;
-              end;
-          elsif l_field_type = 'LIST' then
-              -- get the description of the value in the list
-              l_value := spc_tool.get_spc_lov_desc(l_value, p_lang);  
-          --elsif l_field_type = 'TEXT' then
-          -- pending the logical formatting of the text   
-          end if; 
+        l_value := spc_tool.format_spc_value ( p_filed_type => l_field_type
+                                             , p_value      => l_value
+                                             , p_lang       => p_lang
+                                             ); 
 
       end if;
       return l_value;
@@ -332,8 +291,8 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
 
     begin
       -- Get the type of the specificity   
-      select t1.field_type, /*t1.list_group, t1.list_code,*/ t2.value, t1.format_id
-      into l_field_type, /*l_list_group, l_list_code,*/ l_value, l_format_id
+      select t1.field_type, t2.value, t1.format_id
+      into l_field_type, l_value, l_format_id
       from spc_definition t1
       join spc_data t2
       on t1.id = t2.spc_id
@@ -347,10 +306,38 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
       
       -- in case of format Y, format the value
       if p_format = 'Y' then 
-          -- depending on the type of the specificity, different formatting
-          if l_field_type = 'DATE' then
+        l_value := spc_tool.format_spc_value ( p_filed_type => l_field_type
+                                             , p_value      => l_value
+                                             , p_lang       => p_lang
+                                             ); 
+
+      end if;
+      return l_value;
+    exception
+        when no_data_found then  return null;
+        when others then return 'Error geting the value of the specificity';
+    end get_value_spc;
+
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the value formated for a given specificity
+    Parameters: 
+        @ p_filed_type NOT NULL       Type of the specificity
+        @ p_value      NOT NULL       Value of the specificity
+        @ p_lang       NULL           Code of the language
+    -------------------------------------------------------------------------
+    */
+    function format_spc_value ( p_filed_type in spc_definition.field_type%type
+                              , p_value      in spc_data.value%type
+                              , p_lang       in spc_lang.lang_code%type default null) 
+    return varchar2 as 
+      l_return varchar2(4000);
+      l_format spc_format.format%type;
+    begin
+      -- depending on the type of the specificity, different formatting
+          if p_filed_type = 'DATE' then
               begin
-                  if l_value is not null then
+                  if p_value is not null then
                       -- get the format of the date
                       begin
                         select format
@@ -362,14 +349,14 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
                           l_format := 'DD-MM-YYYY';
                       end;
                       -- format the date
-                      l_value := to_char(to_date(l_value, 'DD-MM-YYYY'), l_format);
+                      l_return := to_char(to_date(p_value, 'DD-MM-YYYY'), l_format);
                   end if;
               exception
                   when others then return null;
               end;
-          elsif l_field_type = 'HOUR' then
+          elsif p_filed_type = 'HOUR' then
               begin
-                  if l_value is not null then
+                  if p_value is not null then
                       -- get the format of the hour
                       begin
                         select format
@@ -381,23 +368,18 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
                           l_format := 'HH24:MI';
                       end;
                       -- format the hour
-                      l_value := to_char(to_date(l_value, 'HH24:MI'), l_format);
+                      l_return := to_char(to_date(p_value, 'HH24:MI'), l_format);
                   end if;
               exception
                   when others then null;
               end;
-          elsif l_field_type = 'LIST' then
+          elsif p_filed_type = 'LIST' then
               -- get the description of the value in the list
-              l_value := spc_tool.get_spc_lov_desc(l_value, p_lang);  
-          --elsif l_field_type = 'TEXT' then
-          -- pending the logical formatting of the text   
+              l_return := spc_tool.get_spc_lov_desc(p_value, p_lang);  
+          elsif p_filed_type = 'TEXT' then
+              l_return := p_value;
           end if; 
-
-      end if;
-      return l_value;
-    exception
-        when no_data_found then  return null;
-        when others then return 'Error geting the value of the specificity';
-    end get_value_spc;
+        return l_return;
+    end format_spc_value;
    
 END SPC_TOOL;
