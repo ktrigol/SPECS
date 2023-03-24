@@ -379,6 +379,8 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
         l_where                  varchar2(2000);
         l_col                    varchar2(2000);
         l_col_nb                 number := 0;
+        l_app_session            varchar2(500):= apex_application.g_instance;
+        l_app_id                 varchar2(500):= apex_application.g_flow_id;
     begin
 
         -- Get the reference type id
@@ -401,7 +403,11 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
                 --t1.value_ref_com,            
                 t1.operator_comp,
                 trim(t1.operator_comp_value) operator_comp_value,
-                t1.display_ind
+                t1.display_ind,
+                t1.ind_link,
+                t1.link_page_id,
+                t1.item_send_value,
+                t1.item_recive_value
             from
                 spc_report_detail t1
             where t1.report_id = p_report_id
@@ -415,7 +421,12 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
 
             -- Concatenate the columns
             if c1.display_ind = 1 then
-                l_query := l_query || ',' || l_col; 
+                if c1.ind_link = 1 and c1.link_page_id is not null then
+                    l_query := l_query || ', ''<a href="' 
+                        || APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || l_app_id || ':'|| c1.link_page_id ||':'|| l_app_session ||'::NO::'||c1.item_recive_value||':'||c1.item_send_value) || '">''||'||l_col||'||''</a>'' as ' || l_col; 
+                else
+                    l_query := l_query || ',' || l_col; 
+                end if;
             end if;
             
             -- Concatenate the where clause

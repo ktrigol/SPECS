@@ -387,7 +387,7 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
           elsif p_filed_type = 'LIST' then
               -- get the description of the value in the list
               l_return := spc_tool.get_spc_lov_desc(p_value, p_lang);  
-          elsif p_filed_type = 'TEXT' then
+          else --if p_filed_type = 'TEXT' then
               l_return := p_value;
           end if; 
         return l_return;
