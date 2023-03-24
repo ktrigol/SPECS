@@ -68,39 +68,43 @@ create or replace package flw_tool -- authid definer
    ----------------------------------------------------------
    
    /* 
-   create flow definition
-   @p_priority : priority between flows
-   @p_ind_active : active by default
-   @p_spc_ref_type_id : specificities reference type
-   @p_spc_group_id : specificities group definition
-   @p_out_id : returns the ID of the row inserted
-   @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
-   @p_out_message : returns the error details when an error occured, null otherwise
+      create flow definition
+      @p_priority : priority between flows
+      @p_ind_active : active by default
+      @p_spc_ref_type_id : specificities reference type
+      @p_ref_type_columns : columns to display when choosing a reference type on creation a flow
+      @p_spc_group_id : specificities group definition
+      @p_out_id : returns the ID of the row inserted
+      @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
+      @p_out_message : returns the error details when an error occured, null otherwise
    */
    procedure create_flow_type (
       p_priority           in  flw_type.priority%type default null,
       p_ind_active         in  flw_type.ind_active%type default 1,
       p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
+      p_ref_type_columns   in  flw_type.ref_type_columns%type default null,
       p_spc_group_id       in  flw_type.spc_group_id%type default null,
       p_out_id             out flw_type.id%type,
       p_out_status         out varchar2,
       p_out_message        out varchar2
    );
-   /* 
-   edit flow definition
-   @p_id : flow type ID
-   @p_priority : priority between flows
-   @p_ind_active : active or not active
-   @p_spc_ref_type_id : specificities reference type
-   @p_spc_group_id : specificities group definition
-   @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
-   @p_out_message : returns the error details when an error occured, null otherwise
+      /* 
+      edit flow definition
+      @p_id : flow type ID
+      @p_priority : priority between flows
+      @p_ind_active : active or not active
+      @p_spc_ref_type_id : specificities reference type
+      @p_ref_type_columns : columns to display when choosing a reference type on creation a flow
+      @p_spc_group_id : specificities group definition
+      @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
+      @p_out_message : returns the error details when an error occured, null otherwise
    */
    procedure update_flow_type (
       p_id                 in  flw_type.id%type,
       p_priority           in  flw_type.priority%type,
       p_ind_active         in  flw_type.ind_active%type,
       p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
+      p_ref_type_columns   in  flw_type.ref_type_columns%type,
       p_spc_group_id       in  flw_type.spc_group_id%type,
       p_out_status         out varchar2,
       p_out_message        out varchar2
@@ -291,4 +295,14 @@ create or replace package flw_tool -- authid definer
     out_status                  out varchar2,
     out_message                 out varchar2
    );
+   -----------------------------------------------------------------------------------
+   /* set flow history det process procedure : used to insert the history details for a flow
+      @p_flow_process_id : flow process ID
+      @out_status : out status
+      @out_message : out message
+   */
+   -----------------------------------------------------------------------------------
+   function get_flw_ref_id_query (
+      p_flw_type_id       in flw_type.id%type
+   )return varchar2;
 end flw_tool;

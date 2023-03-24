@@ -104,6 +104,7 @@ end get_flw_type_step_desc;
    @p_priority : priority between flows
    @p_ind_active : active by default
    @p_spc_ref_type_id : specificities reference type
+   @p_ref_type_columns : columns to display when choosing a reference type on creation a flow
    @p_spc_group_id : specificities group definition
    @p_out_id : returns the ID of the row inserted
    @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
@@ -113,6 +114,7 @@ procedure create_flow_type (
    p_priority           in  flw_type.priority%type default null,
    p_ind_active         in  flw_type.ind_active%type default 1,
    p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
+   p_ref_type_columns   in  flw_type.ref_type_columns%type default null,
    p_spc_group_id       in  flw_type.spc_group_id%type default null,
    p_out_id             out flw_type.id%type,
    p_out_status         out varchar2,
@@ -127,8 +129,8 @@ begin
    end if;
  
    --> insert row
-   insert into flw_type(priority, ind_active, spc_ref_type_id, spc_group_id)
-   values(l_next_priority, p_ind_active, p_spc_ref_type_id, p_spc_group_id)
+   insert into flw_type(priority, ind_active, spc_ref_type_id, spc_group_id, ref_type_columns)
+   values(l_next_priority, p_ind_active, p_spc_ref_type_id, p_spc_group_id, p_ref_type_columns)
    returning id into p_out_id;
  
    p_out_status := 'SUCCESS';
@@ -147,6 +149,7 @@ end create_flow_type;
    @p_priority : priority between flows
    @p_ind_active : active or not active
    @p_spc_ref_type_id : specificities reference type
+   @p_ref_type_columns : columns to display when choosing a reference type on creation a flow
    @p_spc_group_id : specificities group definition
    @p_out_status : returns SUCCESS if no error or ERROR if something went wrong
    @p_out_message : returns the error details when an error occured, null otherwise
@@ -156,6 +159,7 @@ procedure update_flow_type (
    p_priority           in  flw_type.priority%type,
    p_ind_active         in  flw_type.ind_active%type,
    p_spc_ref_type_id    in  flw_type.spc_ref_type_id%type,
+   p_ref_type_columns   in  flw_type.ref_type_columns%type,
    p_spc_group_id       in  flw_type.spc_group_id%type,
    p_out_status         out varchar2,
    p_out_message        out varchar2
@@ -167,6 +171,7 @@ begin
    set priority = p_priority, 
        ind_active = p_ind_active,
        spc_ref_type_id = p_spc_ref_type_id,
+       ref_type_columns = p_ref_type_columns,
        spc_group_id = p_spc_group_id
    where id = p_id;
  
@@ -1000,5 +1005,48 @@ end demo_send_mail;
          out_message := 'Une erreur est survenue ' || sqlerrm;
    end log_history_det;
    
+   -----------------------------------------------------------------------------------
+   /* set flow history det process procedure : used to insert the history details for a flow
+      @p_flow_process_id : flow process ID
+      @out_status : out status
+      @out_message : out message
+   */
+   -----------------------------------------------------------------------------------
+   function get_flw_ref_id_query (
+      p_flw_type_id       in flw_type.id%type
+   )return varchar2 as
+      -- Variables
+      l_query              varchar2(4000);
+      l_ref_type_columns   flw_type.ref_type_columns%type;
+
+   begin
+      -- Verify if the column ref_type_columns is not null
+      select ref_type_columns
+      into l_ref_type_columns
+      from flw_type
+      where id = p_flw_type_id;
+
+      if l_ref_type_columns is null then
+         -- Get the query
+         select 'Select '||replace(t1.ref_type_columns,':','||'' ''||')||' as display, id as return from '||t2.table_name 
+         into l_query
+         from flw_type t1
+         join spc_ref_type t2
+         on t1.spc_ref_type_id = t2.id
+         where t1.id = p_flw_type_id;
+      else 
+         -- Get the query
+         select 'Select id as display, id as return from '||t2.table_name 
+         into l_query
+         from flw_type t1
+         join spc_ref_type t2
+         on t1.spc_ref_type_id = t2.id
+         where t1.id = p_flw_type_id;
+      end if;
+
+      -- Return the query
+      return l_query;
+
+   end get_flw_ref_id_query;
  
 end flw_tool;
