@@ -267,7 +267,7 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
                     seq_no as seq_no
                     , group_by_ind
                 from spc_report_detail
-                where report_id = 6
+                where report_id = p_report_id
                 and active_ind = 1
                 and display_ind = 1
                 --and group_by_ind = 1

@@ -85,7 +85,7 @@ begin
         into :new.disp_seq
         from spc_definition d
         where d.app_id = :new.app_id
-        and   d.page_id = :new.page_id
+        and   nvl(d.page_id, -1) = nvl(:new.page_id, -1)
         and   d.group_def_id = :new.group_def_id;
 
         :new.spc_code   := 'ITEM_' || :new.id;
