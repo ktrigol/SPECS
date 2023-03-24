@@ -593,7 +593,7 @@ begin
             out_status        => l_status,
             out_message       => l_message
          );
-
+ 
          if l_status is null or l_status != 'SUCCESS' then
             p_out_status := 'ERROR';
             p_out_message := l_message;
@@ -625,7 +625,7 @@ begin
           set status = 'COMPLETED'
         where id = p_flw_process_id;
     end if;
-
+ 
     ------------------------------------------------------------
     -- execute PL/SQL actions defined at this step
     ------------------------------------------------------------
@@ -951,7 +951,7 @@ end demo_send_mail;
       end loop;
  
    end flow_action_sync_spcs;   
-
+ 
    -----------------------------------------------------------------------------------
    /* set flow history det process procedure : used to insert the history details for a flow
       @p_flow_process_id : flow process ID
@@ -969,17 +969,17 @@ end demo_send_mail;
       l_page_id         number;
       l_flw_history_id  number;
    begin
-
+ 
       -- Get the application and page id
       l_app_id := apex_util.get_session_state('APP_ID');
       l_page_id := apex_util.get_session_state('APP_PAGE_ID');
-
+ 
       -- Get the last record in flw_history for the process
       select max(id)
       into l_flw_history_id
       from flw_history
       where flw_process_id = p_flow_process_id; 
-
+ 
       -- Insert the history details
       insert into flw_history_det (flw_history_id, value_before, value_after, spc_id)
          --values (l_flw_history_id_target, l_value, r_sync_config.target_spc_id);
@@ -997,7 +997,7 @@ end demo_send_mail;
       and nvl(t2.ref_type_id, -1) = nvl(t1.c004, -1)
       and nvl(t2.ref_id, -1) = nvl(t1.c003, -1)
       where t1.collection_name = 'SPC_DT_'||l_app_id||'P?='||l_page_id;
-
+ 
       out_status := 'SUCCESS';
    exception 
       when others then
@@ -1018,15 +1018,15 @@ end demo_send_mail;
       -- Variables
       l_query              varchar2(4000);
       l_ref_type_columns   flw_type.ref_type_columns%type;
-
+ 
    begin
       -- Verify if the column ref_type_columns is not null
       select ref_type_columns
       into l_ref_type_columns
       from flw_type
       where id = p_flw_type_id;
-
-      if l_ref_type_columns is null then
+ 
+      if l_ref_type_columns is not null then
          -- Get the query
          select 'Select '||replace(t1.ref_type_columns,':','||'' ''||')||' as display, id as return from '||t2.table_name 
          into l_query
@@ -1043,10 +1043,14 @@ end demo_send_mail;
          on t1.spc_ref_type_id = t2.id
          where t1.id = p_flw_type_id;
       end if;
-
+ 
       -- Return the query
       return l_query;
-
+    exception 
+        when no_data_found then 
+            l_query := 'select null as display, null as return from dual';
+            return l_query;
+ 
    end get_flw_ref_id_query;
  
 end flw_tool;
