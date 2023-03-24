@@ -132,6 +132,26 @@ create or replace PACKAGE "SPC_DYNAMIC_REPORT" AS
 
     /************************************************************************
     -------------------------------------------------------------------------
+    Function Description: Return the URL of the column
+    Return: text
+    Parameters:
+        @ p_app_id         NOT NULL        
+        @ p_app_page_id    NOT NULL        
+        @ p_session        NOT NULL
+        @ p_send_value    
+        @ p_receive_value
+    -------------------------------------------------------------------------
+    */
+
+    function get_url( p_app_id               in varchar2
+                                  , p_app_page_id          in varchar2
+                                  , p_session              in varchar2
+                                  , p_send_value           in varchar2
+                                  , p_receive_value        in varchar2
+    )return varchar2;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
     Function Description: Function to get the query for the collection
     Return: Text
     Parameters:

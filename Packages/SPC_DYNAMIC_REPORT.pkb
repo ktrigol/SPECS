@@ -359,6 +359,30 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
         
         return l_result;
     end get_column_query_coll;
+
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Return the URL of the column
+    Return: text
+    Parameters:
+        @ p_app_id         NOT NULL        
+        @ p_app_page_id    NOT NULL        
+        @ p_session        NOT NULL
+        @ p_send_value    
+        @ p_receive_value
+    -------------------------------------------------------------------------
+    */
+
+    function get_url( p_app_id               in varchar2
+                                  , p_app_page_id          in varchar2
+                                  , p_session              in varchar2
+                                  , p_send_value           in varchar2
+                                  , p_receive_value        in varchar2
+    )return varchar2 as
+    begin
+    return null;/*APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || p_app_id || ':'|| p_app_page_id ||':'|| p_session ||'::NO::'||p_send_value||':'||p_receive_value
+                ,p_checksum_type => 'SESSION');*/
+    end;
     
     /************************************************************************
     -------------------------------------------------------------------------
@@ -422,8 +446,12 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
             -- Concatenate the columns
             if c1.display_ind = 1 then
                 if c1.ind_link = 1 and c1.link_page_id is not null then
-                    l_query := l_query || ', ''<a href="' 
-                        || APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || l_app_id || ':'|| c1.link_page_id ||':'|| l_app_session ||'::NO::'||c1.item_recive_value||':'||c1.item_send_value) || '">''||'||l_col||'||''</a>'' as ' || l_col; 
+                    l_query := l_query || ', ''<a href="''' 
+                            ||' || APEX_UTIL.PREPARE_URL(p_url => ''f?p=' || l_app_id || ':'|| c1.link_page_id ||':'|| l_app_session ||'::NO::'||c1.item_recive_value||':''||'||c1.item_send_value || '||'''''
+                        --|| replace(APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || l_app_id || ':'|| c1.link_page_id ||':'|| l_app_session ||'::NO::'||c1.item_recive_value||':#'
+                                                         ||',p_checksum_type => ''SESSION'')'                                                        
+                            --,'#','''||'||c1.item_send_value||'||''') 
+                            || '||''">''||'||l_col||'||''</a>'' as ' || l_col; 
                 else
                     l_query := l_query || ',' || l_col; 
                 end if;
