@@ -76,8 +76,12 @@ create or replace PACKAGE "SPC_TOOL" AS
     ------------------------------------------------------------------------- 
     Procedure Description: Returns the audit information for a given record
     Parameters: 
-        @ p_list_id    NOT NULL       ID of the list
-        @ p_lang       NULL           Code of the language
+        @ p_ref_id          NOT NULL    ID of the record
+        @ p_table_name      NOT NULL    Name of the table
+        @ p_column_name1    NULL        Name of the column date of creation
+        @ p_column_name2    NULL        Name of the column user of creation
+        @ p_column_name3    NULL        Name of the column date of modification
+        @ p_column_name4    NULL        Name of the column user of modification
     OUT:
         @ out_date_created   OUT       Date when the record was created
         @ out_created_by     OUT       User who created the record
@@ -85,8 +89,13 @@ create or replace PACKAGE "SPC_TOOL" AS
         @ out_modified_by    OUT       User who modified the record
     -------------------------------------------------------------------------
     */
+
     procedure get_audit_resp ( p_ref_id           in number
                              , p_table_name       in varchar2
+                             , p_column_name1     in varchar2 default null
+                             , p_column_name2     in varchar2 default null
+                             , p_column_name3     in varchar2 default null
+                             , p_column_name4     in varchar2 default null
                              , out_date_created   out varchar2
                              , out_created_by     out varchar2
                              , out_date_modified  out varchar2
