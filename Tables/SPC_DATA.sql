@@ -47,6 +47,21 @@ begin
     end if; 
     :new.modified    := sysdate; 
     :new.modified_by := nvl(sys_context('APEX$SESSION','APP_USER'),user); 
+
+    declare
+      l_count number;
+    begin
+      select count(1) into l_count 
+      from spc_definition_report 
+      where spc_id = :new.spc_id
+      and ref_type_id = :new.ref_type_id;
+
+      if l_count = 0 then
+        insert into spc_definition_report (spc_id, ref_type_id)
+        values (:new.spc_id, :new.ref_type_id);
+      end if;
+    end;
+
 end SPC_DATA_BIU;
 
 ALTER TRIGGER "SPC_DATA_BIU" ENABLE;
