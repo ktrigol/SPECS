@@ -7,6 +7,7 @@ DROP TABLE "SPC_REPORT";
                             , "REF_TYPE_ID" NUMBER
                             , "ACTIVE_IND" NUMBER DEFAULT 1
                             , "ROLE_IDS" VARCHAR2(500) COLLATE "USING_NLS_COMP"
+                            , "APP_ID" NUMBER
                             , "CREATED" DATE
                             , "CREATED_BY" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                             , "MODIFIED" DATE
@@ -18,6 +19,7 @@ DROP TABLE "SPC_REPORT";
    COMMENT ON COLUMN "SPC_REPORT"."REF_TYPE_ID " IS 'Type reference id, references table SPC_REF_TYPE';
    COMMENT ON COLUMN "SPC_REPORT"."ACTIVE_IND" IS 'Active indicator';
    COMMENT ON COLUMN "SPC_REPORT"."ROLE_IDS" IS 'Role ids that can access the report';
+   COMMENT ON COLUMN "SPC_REPORT"."APP_ID" IS 'Application id where the report will be displayed';
    COMMENT ON COLUMN "SPC_REPORT"."CREATED" IS 'Creation date';
    COMMENT ON COLUMN "SPC_REPORT"."CREATED_BY" IS 'Creation user';
    COMMENT ON COLUMN "SPC_REPORT"."MODIFIED" IS 'Modification date';
@@ -54,6 +56,7 @@ ALTER TRIGGER "SPC_REPORT_BIU" ENABLE;
 
   ALTER TABLE "SPC_REPORT" MODIFY ("REF_TYPE_ID " NOT NULL ENABLE);
   ALTER TABLE "SPC_REPORT" MODIFY ("ACTIVE_IND" NOT NULL ENABLE);
+  ALTER TABLE "SPC_REPORT" MODIFY ("APP_ID" NOT NULL ENABLE);
   ALTER TABLE "SPC_REPORT" MODIFY ("CREATED" NOT NULL ENABLE);
   ALTER TABLE "SPC_REPORT" MODIFY ("CREATED_BY" NOT NULL ENABLE);
   ALTER TABLE "SPC_REPORT" MODIFY ("MODIFIED" NOT NULL ENABLE);

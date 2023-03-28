@@ -162,4 +162,17 @@ create or replace PACKAGE "SPC_DYNAMIC_REPORT" AS
     function get_query_collection( p_report_id         in spc_report.id%type
     ) return clob;
 
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Function to get the query for the list of reports available for the application
+    Return: query
+    Parameters:
+        @p_goto_page_id    NOT NULL        ID of the page to go to (DYNAMIC REPORT LANDING PAGE)
+    -------------------------------------------------------------------------
+    */
+
+    function get_query_reports( 
+          p_goto_page_id  number
+    ) return clob;
+    
 END SPC_DYNAMIC_REPORT;

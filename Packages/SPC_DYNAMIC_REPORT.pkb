@@ -515,4 +515,88 @@ create or replace PACKAGE BODY SPC_DYNAMIC_REPORT AS
         
     end get_query_collection;
 
+    /************************************************************************
+    -------------------------------------------------------------------------
+    Function Description: Function to get the query for the list of reports available for the application
+    Return: query
+    Parameters:
+        @p_goto_page_id    NOT NULL        ID of the page to go to (DYNAMIC REPORT LANDING PAGE)
+    -------------------------------------------------------------------------
+    */
+
+    function get_query_reports( 
+          p_goto_page_id  number
+    ) return clob
+    is
+        -- Variables
+        l_query clob;
+    begin
+        l_query := 
+        'select
+            list_title,
+            list_text,
+            list_class,
+            APEX_UTIL.PREPARE_URL(
+                p_url => ''f?p='' || '''||v('APP_ID') ||':'||p_goto_page_id||':'||v('APP_SESSION')||':'||'''||'||
+                'case when break is null then ''IR_538348'' else ''IR_''||break end ||'':NO::P'||p_goto_page_id||'_ID,P'||p_goto_page_id||'_BREADCRUM_TITLE:''||ID||'',''||list_title,
+                p_checksum_type => ''SESSION'') as URL_LINK,
+            link_attr,
+            list_badge,
+            ''u-color-''||to_char(MOD((ROWNUM-1),15)+1) as icon_color_class,
+            icon_class,
+            id,
+            case 
+                when break is null then ''IR_538348''
+                else ''IR_'' || break
+            end as break
+        from(
+            select
+                t1.id,
+                spc_dynamic_report.get_col_pos_group_by(p_report_id => id) as break,
+                t1.role_ids,
+                spc_dynamic_report.get_description_lang ( p_report_id => id    
+                                                        , p_value     => ''REPORT_NAME''
+                                                        , p_lang      => :AI_LANGUAGE_CODE) as list_title,
+                spc_dynamic_report.get_description_lang ( p_report_id => id
+                                                        , p_value     => ''DETAIL''
+                                                        , p_lang      => :AI_LANGUAGE_CODE) as list_text,
+                '' '' as list_class,
+                null as link,
+                null as link_attr,
+                (select table_name from spc_ref_type where id = t1.ref_type_id) as list_badge,
+                ''fa fa-table'' as icon_class
+            from
+                spc_report t1
+            where active_ind = 1
+            and app_id = '||v('APP_ID')||'
+        )'||
+        --where 
+        -- TODO: roles 
+        /*(
+            -- rôles
+            liste_id_roles is null or 
+            exists
+            (
+                select id_role
+                from(
+                    select to_number(column_value) as id_role
+                    from table(apex_string.split(liste_id_roles, ':'))
+                )
+                where inb_util.existe_role_utilisateur(p_role_id => id_role, p_user_name => :APP_USER) = 'TRUE'
+                and rownum = 1
+            )
+        ) 
+        -- search by
+        and*//* (
+            :P50_RECHERCHER is null or
+            (upper(list_title) like '%' || upper(:P50_RECHERCHER) || '%') or
+            (upper(list_text) like '%' || upper(:P50_RECHERCHER) || '%') or
+            (upper(list_badge) like '%' || upper(:P50_RECHERCHER) || '%')
+        )*/
+        'order by
+            list_title asc;' ;
+
+        return l_query;
+    end get_query_reports;
+
 END SPC_DYNAMIC_REPORT;
