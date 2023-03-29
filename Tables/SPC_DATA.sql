@@ -56,7 +56,7 @@ begin
       where spc_id = :new.spc_id
       and ref_type_id = :new.ref_type_id;
 
-      if l_count = 0 then
+      if l_count = 0 and :new.ref_type_id is not null then
         insert into spc_definition_report (spc_id, ref_type_id)
         values (:new.spc_id, :new.ref_type_id);
       end if;
