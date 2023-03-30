@@ -147,4 +147,16 @@ create or replace PACKAGE "SPC_TOOL" AS
                               , p_value      in spc_data.value%type
                               , p_lang       in spc_lang.lang_code%type default null) 
     return varchar2;
+
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the id of a given language from the table spc_lang
+    Parameters: 
+        @ p_lang_code  NOT NULL       Code of the language
+    -------------------------------------------------------------------------
+    */
+    function get_lang_id( 
+        p_lang_code in spc_lang.lang_code%type
+    ) return number;
+    
 END SPC_TOOL;

@@ -392,5 +392,39 @@ create or replace PACKAGE BODY "SPC_TOOL" AS
           end if; 
         return l_return;
     end format_spc_value;
+
+    /************************************************************************
+    ------------------------------------------------------------------------- 
+    Function Description: Returns the id of a given language from the table spc_lang
+    Parameters: 
+        @ p_lang_code  NOT NULL       Code of the language
+    -------------------------------------------------------------------------
+    */
+    function get_lang_id( 
+        p_lang_code in spc_lang.lang_code%type
+    ) return number 
+    as 
+      -- Variables
+      l_id  spc_lang.id%type;
+    begin
+      begin
+        -- Get the lang id  
+        select id 
+        into l_id
+        from spc_lang
+        where lang_code = p_lang_code;
+      exception
+        when no_data_found then 
+          -- if the language does not exist, return the default language
+          select id
+          into l_id
+          from spc_lang
+          where default_lang_ind = 1;
+      end;
+
+      return l_id;
+    exception
+        when others then return -1;
+    end get_lang_id;
    
 END SPC_TOOL;

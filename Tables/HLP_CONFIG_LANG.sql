@@ -7,7 +7,7 @@ DROP TABLE "HLP_CONFIG_LANG";
                                   , "CONFIG_ID" NUMBER
                                   , "LANG_ID" NUMBER
                                   , "TITLE" VARCHAR2(255) COLLATE "USING_NLS_COMP"
-                                  , "TEXT" VARCHAR2(4000) COLLATE "USING_NLS_COMP"
+                                  , "TEXT" CLOB
                                   , "CREATED" DATE
                                   , "CREATED_BY" VARCHAR2(255) COLLATE "USING_NLS_COMP"
                                   , "MODIFIED" DATE
